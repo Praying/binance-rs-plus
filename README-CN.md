@@ -854,7 +854,3 @@ fn main() {
     }
 }
 ```
-
-## 其他交易所
-
-如果您使用 [Bitfinex](https://www.bitfinex.com/)，可以查看我的 [用于 Bitfinex API 的 Rust 库](https://github.com/wisespace-io/bitfinex-rs)。

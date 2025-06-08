@@ -847,6 +847,3 @@ fn main() {
 }
 ```
 
-## OTHER EXCHANGES
-
-If you use [Bitfinex](https://www.bitfinex.com/) check out my [Rust library for bitfinex API](https://github.com/wisespace-io/bitfinex-rs)
