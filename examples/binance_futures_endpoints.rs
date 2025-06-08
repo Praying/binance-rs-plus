@@ -1,105 +1,137 @@
-use binance::api::*;
-use binance::futures::general::*;
-use binance::futures::market::*;
-use binance::futures::model::*;
-use binance::errors::ErrorKind as BinanceLibErrorKind;
+use binance_rs_plus::api::*;
+use binance_rs_plus::futures::general::*;
+use binance_rs_plus::futures::market::*;
+use binance_rs_plus::futures::model::*;
+// use binance_rs_plus::errors::ErrorKind as BinanceLibErrorKind; // Removed
+use anyhow::Result; // Added
 
-fn main() {
-    general();
-    //account();
-    market_data();
+#[tokio::main]
+async fn main() -> Result<()> {
+    general().await?;
+    // account().await?; // Account example for futures is not present in original, keeping it commented
+    market_data().await?;
+    Ok(())
 }
 
-fn general() {
+async fn general() -> Result<()> {
     let general: FuturesGeneral = Binance::new(None, None);
 
-    match general.ping() {
-        Ok(answer) => println!("{:?}", answer),
+    match general.ping().await {
+        Ok(answer) => println!("Futures Ping successful: {:?}", answer), // Ensure Empty struct is Debug
         Err(err) => {
-            match err.0 {
-                BinanceLibErrorKind::BinanceError(response) => match response.code {
-                    -1000_i16 => println!("An unknown error occured while processing the request"),
-                    _ => println!("Non-catched code {}: {}", response.code, response.msg),
-                },
-                BinanceLibErrorKind::Msg(msg) => println!("Binancelib error msg: {}", msg),
-                _ => println!("Other errors: {}.", err.0),
-            };
+            println!("Error pinging futures: {:?}", err);
         }
     }
 
-    match general.get_server_time() {
-        Ok(answer) => println!("Server Time: {}", answer.server_time),
-        Err(e) => println!("Error: {}", e),
+    match general.get_server_time().await {
+        Ok(answer) => println!("Futures Server Time: {}", answer.server_time),
+        Err(e) => println!("Error getting futures server time: {:?}", e),
     }
 
-    match general.exchange_info() {
-        Ok(answer) => println!("Exchange information: {:?}", answer),
-        Err(e) => println!("Error: {}", e),
+    match general.exchange_info().await {
+        Ok(answer) => println!("Futures Exchange information: {:?}", answer),
+        Err(e) => println!("Error getting futures exchange info: {:?}", e),
     }
 
-    match general.get_symbol_info("btcusdt") {
-        Ok(answer) => println!("Symbol information: {:?}", answer),
-        Err(e) => println!("Error: {}", e),
+    match general.get_symbol_info("btcusdt").await {
+        Ok(answer) => println!("Futures Symbol information: {:?}", answer),
+        Err(e) => println!("Error getting futures symbol info: {:?}", e),
     }
+    Ok(())
 }
 
-fn market_data() {
+async fn market_data() -> Result<()> {
     let market: FuturesMarket = Binance::new(None, None);
 
-    match market.get_depth("btcusdt") {
-        Ok(answer) => println!("Depth update ID: {:?}", answer.last_update_id),
-        Err(e) => println!("Error: {}", e),
+    match market.get_depth("btcusdt").await {
+        Ok(answer) => println!("Futures Depth update ID: {:?}", answer.last_update_id),
+        Err(e) => println!("Error getting futures depth: {:?}", e),
     }
 
-    match market.get_trades("btcusdt") {
-        Ok(Trades::AllTrades(answer)) => println!("First trade: {:?}", answer[0]),
-        Err(e) => println!("Error: {}", e),
+    match market.get_trades("btcusdt").await {
+        Ok(Trades::AllTrades(answer)) => {
+            if let Some(trade) = answer.first() {
+                println!("Futures First trade: {:?}", trade);
+            } else {
+                println!("No trades found for BTCUSDT futures.");
+            }
+        },
+        Err(e) => println!("Error getting futures trades: {:?}", e),
     }
 
-    match market.get_agg_trades("btcusdt", None, None, None, None) {
-        Ok(AggTrades::AllAggTrades(answer)) => println!("First aggregated trade: {:?}", answer[0]),
-        Err(e) => println!("Error: {}", e),
+    match market.get_agg_trades("btcusdt", None, None, None, None).await {
+        Ok(AggTrades::AllAggTrades(answer)) => {
+             if let Some(agg_trade) = answer.first() {
+                println!("Futures First aggregated trade: {:?}", agg_trade);
+            } else {
+                println!("No aggregated trades found for BTCUSDT futures.");
+            }
+        },
+        Err(e) => println!("Error getting futures agg_trades: {:?}", e),
     }
 
-    match market.get_klines("btcusdt", "5m", 10, None, None) {
-        Ok(KlineSummaries::AllKlineSummaries(answer)) => println!("First kline: {:?}", answer[0]),
-        Err(e) => println!("Error: {}", e),
+    match market.get_klines("btcusdt", "5m", 10, None, None).await {
+        Ok(KlineSummaries::AllKlineSummaries(answer)) => {
+            if let Some(kline) = answer.first() {
+                println!("Futures First kline: {:?}", kline);
+            } else {
+                println!("No klines found for BTCUSDT futures.");
+            }
+        },
+        Err(e) => println!("Error getting futures klines: {:?}", e),
     }
 
-    match market.get_24h_price_stats("btcusdt") {
-        Ok(answer) => println!("24hr price stats: {:?}", answer),
-        Err(e) => println!("Error: {}", e),
+    match market.get_24h_price_stats("btcusdt").await {
+        Ok(answer) => println!("Futures 24hr price stats: {:?}", answer),
+        Err(e) => println!("Error getting futures 24h price stats: {:?}", e),
     }
 
-    match market.get_price("btcusdt") {
-        Ok(answer) => println!("Price: {:?}", answer),
-        Err(e) => println!("Error: {}", e),
+    match market.get_price("btcusdt").await {
+        Ok(answer) => println!("Futures Price: {:?}", answer),
+        Err(e) => println!("Error getting futures price: {:?}", e),
     }
 
-    match market.get_all_book_tickers() {
-        Ok(BookTickers::AllBookTickers(answer)) => println!("First book ticker: {:?}", answer[0]),
-        Err(e) => println!("Error: {}", e),
+    match market.get_all_book_tickers().await {
+        Ok(BookTickers::AllBookTickers(answer)) => {
+            if let Some(ticker) = answer.first() {
+                println!("Futures First book ticker: {:?}", ticker);
+            } else {
+                println!("No book tickers found for futures.");
+            }
+        },
+        Err(e) => println!("Error getting all futures book tickers: {:?}", e),
     }
 
-    match market.get_book_ticker("btcusdt") {
-        Ok(answer) => println!("Book ticker: {:?}", answer),
-        Err(e) => println!("Error: {}", e),
+    match market.get_book_ticker("btcusdt").await {
+        Ok(answer) => println!("Futures Book ticker: {:?}", answer),
+        Err(e) => println!("Error getting futures book ticker: {:?}", e),
     }
 
-    match market.get_mark_prices() {
-        Ok(MarkPrices::AllMarkPrices(answer)) => println!("First mark Prices: {:?}", answer[0]),
-        Err(e) => println!("Error: {}", e),
+    match market.get_mark_prices().await {
+        Ok(MarkPrices::AllMarkPrices(answer)) => {
+            if let Some(mark_price) = answer.first() {
+                println!("Futures First mark Prices: {:?}", mark_price);
+            } else {
+                println!("No mark prices found for futures.");
+            }
+        },
+        Err(e) => println!("Error getting futures mark prices: {:?}", e),
     }
 
-    match market.get_all_liquidation_orders() {
+    match market.get_all_liquidation_orders().await {
         Ok(LiquidationOrders::AllLiquidationOrders(answer)) => {
-            println!("First liquidation order: {:?}", answer[0]);
+            if let Some(liq_order) = answer.first() {
+                println!("Futures First liquidation order: {:?}", liq_order);
+            } else {
+                println!("No liquidation orders found for futures.");
+            }
         }
-        Err(e) => println!("Error: {}", e),
+        Err(e) => println!("Error getting futures liquidation orders: {:?}", e),
     }
 
-    match market.open_interest("btcusdt") {
-        Ok(answer) => println!("Open interest: {:?}", answer),
-        Err(e) => println!("Error: {}", e),
+    match market.open_interest("btcusdt").await {
+        Ok(answer) => println!("Futures Open interest: {:?}", answer),
+        Err(e) => println!("Error getting futures open interest: {:?}", e),
     }
+    Ok(())
 }

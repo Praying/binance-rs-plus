@@ -1,7 +1,7 @@
-use crate::errors::Result;
+use crate::errors::{Result, Error}; // Added Error
 use std::collections::BTreeMap;
 use std::time::{SystemTime, UNIX_EPOCH};
-use error_chain::bail;
+// Removed error_chain::bail;
 use serde_json::Value;
 
 pub fn build_request(parameters: BTreeMap<String, String>) -> String {
@@ -30,7 +30,7 @@ pub fn build_signed_request_custom(
         parameters.insert("timestamp".into(), timestamp.to_string());
         return Ok(build_request(parameters));
     }
-    bail!("Failed to get timestamp")
+    Err(Error::Custom("Failed to get timestamp".to_string()))
 }
 
 pub fn to_i64(v: &Value) -> i64 {

@@ -1,98 +1,124 @@
-use binance::futures::websockets::*;
+use binance_rs_plus::futures::websockets::*;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc; // Added for Arc
+use anyhow::Result; // Added for anyhow
+use std::pin::Pin; // Added for Pin
+use std::future::Future; // Added for Future
+use binance_rs_plus::errors::Result as BinanceResult; // To avoid conflict with anyhow::Result for handler return
 
-fn main() {
-    market_websocket();
+#[tokio::main]
+async fn main() -> Result<()> {
+    market_websocket().await?;
+    Ok(())
 }
 
-fn market_websocket() {
+async fn market_websocket() -> Result<()> {
     // Example to show the future market websockets. It will print one event for each
     // endpoint and continue to the next.
 
-    let keep_running = AtomicBool::new(true);
     let stream_examples_usd_m = vec![
-        // taken from https://binance-docs.github.io/apidocs/futures/en/#websocket-market-streams
-        "btcusdt@aggTrade",                     // <symbol>@aggTrade
-        "btcusdt@markPrice",                    // <symbol>@markPrice OR <symbol>@markPrice@1s
-        "btcusdt@kline_1m",                     // <symbol>@kline_<interval>
-        "btcusdt_perpetual@continuousKline_1m", // <pair>_<contractType>@continuousKline_<interval> e.g. "btcusd_next_quarter@continuousKline_1m"
-        "btcusdt@miniTicker",                   // <symbol>@miniTicker
+        "btcusdt@aggTrade",
+        "btcusdt@markPrice",
+        "btcusdt@kline_1m",
+        // "btcusdt_perpetual@continuousKline_1m", // Might require specific pair/contract type logic if not standard symbol
+        "btcusdt@miniTicker",
         "!miniTicker@arr",
-        "btcusdt@ticker", // <symbol>@ticker
+        "btcusdt@ticker",
         "!ticker@arr",
-        "btcusdt@bookTicker", // <symbol>@bookTicker
+        "btcusdt@bookTicker",
         "!bookTicker",
-        // forceOrder can take a while before a message comes in, since
-        // it depends on when a position is liquidated
-        "btcusdt@forceOrder", // <symbol>@forceOrder
+        "btcusdt@forceOrder", // This might take time to receive an event
         "!forceOrder@arr",
-        "btcusdt@depth20@100ms", // <symbol>@depth<levels> OR <symbol>@depth<levels>@500ms OR <symbol>@depth<levels>@100ms.
-        "btcusdt@depth@100ms",   // <symbol>@depth OR <symbol>@depth@500ms OR <symbol>@depth@100ms
+        "btcusdt@depth20@100ms",
+        "btcusdt@depth@100ms",
     ];
 
     let stream_examples_coin_m = vec![
-        // taken from https://binance-docs.github.io/apidocs/delivery/en/#websocket-market-streams
-
-        // A possible symbol is btcusd_210924. This needs updates if the current date
-        // is greater than 2021-09-24. It'd be nice to make this symbol automatically
-        // generated, or find a <symbol> that always works.
-        "btcusd_210924@aggTrade",                 // <symbol>@aggTrade
-        "btcusd@indexPrice@1s",                   //<pair>@indexPrice OR <pair>@indexPrice@1s
-        "btcusd_210924@markPrice",                // <symbol>@markPrice OR <symbol>@markPrice@1s
-        "btcusd@markPrice",                       // <pair>@markPrice OR <pair>@markPrice@1s
-        "btcusd_210924@kline_1m",                 // <symbol>@kline_<interval>
-        "btcusd_next_quarter@continuousKline_1m", // <pair>_<contractType>@continuousKline_<interval>
-        "btcusd@indexPriceKline_1m",              // <pair>@indexPriceKline_<interval>
-        "btcusd_210924@markPriceKline_1m",        // <symbol>@markPriceKline_<interval>
-        "btcusd_210924@miniTicker",               // <symbol>@miniTicker
-        "!miniTicker@arr",
-        "btcusd_210924@ticker", // <symbol>@ticker
-        "!ticker@arr",
-        "btcusd_210924@bookTicker", // <symbol>@bookTicker
-        "!bookTicker",
-        // forceOrder can take a while before a message comes in, since
-        // it depends on when a position is liquidated
-        "btcusd_210924@forceOrder", // <symbol>@forceOrder
-        "!forceOrder@arr",
-        "btcusd_210924@depth20@100ms", // <symbol>@depth<levels> OR <symbol>@depth<levels>@500ms OR <symbol>@depth<levels>@100ms.
-        "btcusd_210924@depth@100ms", // <symbol>@depth OR <symbol>@depth@500ms OR <symbol>@depth@100ms
+        // For COIN-M, symbols like "btcusd_perp" or "btcusd_240628" (example for June 2024 contract) are common.
+        // Using a generic placeholder that is more likely to exist for testing.
+        // Update these with valid, active COIN-M symbols if needed.
+        "btcusd_perp@aggTrade",
+        "btcusd_perp@markPrice",
+        "btcusd_perp@kline_1m",
+        // "btcusd_next_quarter@continuousKline_1m", // Needs valid next_quarter symbol
+        "btcusd_perp@miniTicker",
+        "!miniTicker@arr", // For COIN-M
+        "btcusd_perp@ticker",
+        "!ticker@arr", // For COIN-M
+        "btcusd_perp@bookTicker",
+        "!bookTicker", // For COIN-M
+        "btcusd_perp@forceOrder",
+        "!forceOrder@arr", // For COIN-M
+        "btcusd_perp@depth20@100ms",
+        "btcusd_perp@depth@100ms",
     ];
 
-    let callback_fn = |event: FuturesWebsocketEvent| {
-        // once a FuturesWebsocketEvent is recevied, we print it
-        // and stop this socket, so the example will continue to the next one
-        //
-        // in case an event comes in that doesn't properly serialize to
-        // a FuturesWebsocketEvent, the web socket loop will keep running
-        println!("{:?}\n", event);
-        keep_running.swap(false, Ordering::Relaxed);
-
-        Ok(())
-    };
 
     // USD-M futures examples
     for stream_example in stream_examples_usd_m {
         println!("Starting with USD_M {:?}", stream_example);
-        keep_running.swap(true, Ordering::Relaxed);
+        let keep_running = Arc::new(AtomicBool::new(true));
+        let keep_running_clone = Arc::clone(&keep_running);
 
+        let callback_fn = move |event: FuturesWebsocketEvent| -> Pin<Box<dyn Future<Output = BinanceResult<()>> + Send + 'static>> {
+            let keep_running_for_handler = Arc::clone(&keep_running_clone);
+            Box::pin(async move {
+                println!("USD-M Event for {}: {:?}\n", stream_example, event);
+                keep_running_for_handler.swap(false, Ordering::Relaxed);
+                Ok(())
+            })
+        };
+        
         let mut web_socket: FuturesWebSockets<'_> = FuturesWebSockets::new(callback_fn);
-        web_socket
-            .connect(&FuturesMarket::USDM, stream_example)
-            .unwrap();
-        web_socket.event_loop(&keep_running).unwrap();
-        web_socket.disconnect().unwrap();
+        
+        if let Err(e) = web_socket.connect(&FuturesMarket::USDM, stream_example).await {
+            eprintln!("Failed to connect to USD-M stream {}: {:?}", stream_example, e);
+            continue;
+        }
+
+        if let Err(e) = web_socket.event_loop(keep_running.clone()).await {
+             // Log error, but don't panic, try next stream
+            eprintln!("Error in USD-M event loop for {}: {:?}", stream_example, e);
+        }
+        
+        if let Err(e) = web_socket.disconnect().await {
+            eprintln!("Failed to disconnect from USD-M stream {}: {:?}", stream_example, e);
+        }
+        println!("Finished with USD_M {:?}", stream_example);
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Small delay before next
     }
 
     // COIN-M futures examples
     for stream_example in stream_examples_coin_m {
         println!("Starting with COIN_M {:?}", stream_example);
-        keep_running.swap(true, Ordering::Relaxed);
+        let keep_running = Arc::new(AtomicBool::new(true));
+        let keep_running_clone = Arc::clone(&keep_running);
+        
+        let callback_fn = move |event: FuturesWebsocketEvent| -> Pin<Box<dyn Future<Output = BinanceResult<()>> + Send + 'static>> {
+            let keep_running_for_handler = Arc::clone(&keep_running_clone);
+            Box::pin(async move {
+                println!("COIN-M Event for {}: {:?}\n", stream_example, event);
+                keep_running_for_handler.swap(false, Ordering::Relaxed);
+                Ok(())
+            })
+        };
 
         let mut web_socket: FuturesWebSockets<'_> = FuturesWebSockets::new(callback_fn);
-        web_socket
-            .connect(&FuturesMarket::COINM, stream_example)
-            .unwrap();
-        web_socket.event_loop(&keep_running).unwrap();
-        web_socket.disconnect().unwrap();
+
+        if let Err(e) = web_socket.connect(&FuturesMarket::COINM, stream_example).await {
+            eprintln!("Failed to connect to COIN-M stream {}: {:?}", stream_example, e);
+            continue;
+        }
+        
+        if let Err(e) = web_socket.event_loop(keep_running.clone()).await {
+            eprintln!("Error in COIN-M event loop for {}: {:?}", stream_example, e);
+        }
+
+        if let Err(e) = web_socket.disconnect().await {
+            eprintln!("Failed to disconnect from COIN-M stream {}: {:?}", stream_example, e);
+        }
+         println!("Finished with COIN_M {:?}", stream_example);
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Small delay
     }
+    Ok(())
 }

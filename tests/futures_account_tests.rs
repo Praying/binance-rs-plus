@@ -1,18 +1,18 @@
-use binance::api::*;
-use binance::config::*;
-use binance::futures::account::*;
+use binance_rs_plus::api::*;
+use binance_rs_plus::config::*;
+use binance_rs_plus::futures::account::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockito::{Server, Matcher};
     use float_cmp::*;
-    use binance::account::OrderSide;
-    use binance::futures::model::Transaction;
+    use binance_rs_plus::account::OrderSide; // Assuming this OrderSide is compatible or aliased correctly
+    use binance_rs_plus::futures::model::{Transaction, Income}; // Added Income
 
-    #[test]
-    fn change_initial_leverage() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn change_initial_leverage() { // async added
+        let mut server = Server::new_async().await; // async added
         let mock_change_leverage = server
             .mock("POST", "/fapi/v1/leverage")
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -20,14 +20,14 @@ mod tests {
                 "leverage=2&recvWindow=1234&symbol=LTCUSDT&timestamp=\\d+&signature=.*".into(),
             ))
             .with_body_from_file("tests/mocks/futures/account/change_initial_leverage.json")
-            .create();
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let response = account.change_initial_leverage("LTCUSDT", 2).unwrap();
+        let response = account.change_initial_leverage("LTCUSDT", 2).await.unwrap(); // .await added
 
         mock_change_leverage.assert();
 
@@ -36,14 +36,14 @@ mod tests {
         assert!(approx_eq!(
             f64,
             response.max_notional_value,
-            9223372036854776000.0,
+            9223372036854776000.0, // This looks like a very large number, ensure it's correct from API
             ulps = 2
         ));
     }
 
-    #[test]
-    fn change_margin_type() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn change_margin_type() { // async added
+        let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("POST", "/fapi/v1/marginType")
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -51,31 +51,36 @@ mod tests {
                 "marginType=ISOLATED&recvWindow=1234&symbol=BTCUSDT&timestamp=\\d+&signature=.*"
                     .into(),
             ))
-            .with_body_from_file("tests/mocks/futures/account/change_margin_type.json")
-            .create();
+            .with_body_from_file("tests/mocks/futures/account/change_margin_type.json") // This mock should return an empty JSON object {} for success
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        account.change_margin_type("BTCUSDT", true).unwrap();
+        account.change_margin_type("BTCUSDT", true).await.unwrap(); // .await added
 
         mock.assert();
     }
 
-    #[test]
-    fn change_position_margin() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn change_position_margin() { // async added
+        let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("POST", "/fapi/v1/positionMargin")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex(
-                "amount=100&recvWindow=1234&symbol=BTCUSDT&timestamp=\\d+&type=1&signature=.*"
+                // The original mock was for amount=100 and type=1 (ADD_MARGIN)
+                // If the function signature changed `true` to `1` for type, this is okay.
+                // The function `change_position_margin` now takes amount: f64, margin_type: u8
+                // Assuming `true` was meant to be `1` for ADD_MARGIN.
+                "amount=100&recvWindow=1234&symbol=BTCUSDT&timestamp=\\d+&type=1&signature=.*" 
                     .into(),
             ))
+             // This mock should return an empty JSON object {} or specific success/error response
             .with_body_from_file("tests/mocks/futures/account/change_position_margin.json")
-            .create();
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
@@ -83,96 +88,98 @@ mod tests {
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         account
-            .change_position_margin("BTCUSDT", 100., true)
+            .change_position_margin("BTCUSDT", 100.0, 1) // Assuming 1 means ADD_MARGIN
+            .await // .await added
             .unwrap();
 
         mock.assert();
     }
 
-    #[test]
-    fn cancel_all_open_orders() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn cancel_all_open_orders() { // async added
+        let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("DELETE", "/fapi/v1/allOpenOrders")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex(
                 "recvWindow=1234&symbol=BTCUSDT&timestamp=\\d+&signature=.*".into(),
             ))
-            .with_body_from_file("tests/mocks/futures/account/cancel_all_open_orders.json")
-            .create();
+            .with_body_from_file("tests/mocks/futures/account/cancel_all_open_orders.json") // This should return success or error code
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        account.cancel_all_open_orders("BTCUSDT").unwrap();
+        account.cancel_all_open_orders("BTCUSDT").await.unwrap(); // .await added
 
         mock.assert();
     }
 
-    #[test]
-    fn change_position_mode() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn change_position_mode() { // async added
+        let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("POST", "/fapi/v1/positionSide/dual")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex(
                 "dualSidePosition=true&recvWindow=1234&timestamp=\\d+&signature=.*".into(),
             ))
-            .with_body_from_file("tests/mocks/futures/account/change_position_mode.json")
-            .create();
+            .with_body_from_file("tests/mocks/futures/account/change_position_mode.json") // Should return success/error
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        account.change_position_mode(true).unwrap();
+        account.change_position_mode(true).await.unwrap(); // .await added
 
         mock.assert();
     }
 
-    #[test]
-    fn stop_market_close_buy() {
-        let mut server = Server::new();
-        let mock_stop_market_close_sell = server.mock("POST", "/fapi/v1/order")
+    #[tokio::test] // Changed
+    async fn stop_market_close_buy() { // async added
+        let mut server = Server::new_async().await; // async added
+        let mock_stop_market_close_buy = server.mock("POST", "/fapi/v1/order") // Renamed for clarity
             .with_header("content-type", "application/json;charset=UTF-8")
-            .match_query(Matcher::Regex("closePosition=TRUE&recvWindow=1234&side=BUY&stopPrice=10.5&symbol=SRMUSDT&timestamp=\\d+&type=STOP_MARKET".into()))
+            // Regex needs to match query params built by build_order_params now
+            .match_query(Matcher::Regex("closePosition=true&recvWindow=1234&side=BUY&stopPrice=10.5&symbol=SRMUSDT&timestamp=\\d+&type=STOP_MARKET&signature=.*".into()))
             .with_body_from_file("tests/mocks/futures/account/stop_market_close_position_buy.json")
-            .create();
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let transaction: Transaction = account.stop_market_close_buy("SRMUSDT", 10.5).unwrap();
+        let transaction: Transaction = account.stop_market_close_buy("SRMUSDT", 10.5).await.unwrap(); // .await added
 
-        mock_stop_market_close_sell.assert();
+        mock_stop_market_close_buy.assert();
 
         assert_eq!(transaction.symbol, "SRMUSDT");
-        assert_eq!(transaction.side, "BUY");
+        assert_eq!(transaction.side, "BUY"); // From the perspective of the executed order after stop is triggered
         assert_eq!(transaction.orig_type, "STOP_MARKET");
         assert!(transaction.close_position);
         assert!(approx_eq!(f64, transaction.stop_price, 10.5, ulps = 2));
     }
 
-    #[test]
-    fn stop_market_close_sell() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn stop_market_close_sell() { // async added
+        let mut server = Server::new_async().await; // async added
         let mock_stop_market_close_sell = server.mock("POST", "/fapi/v1/order")
             .with_header("content-type", "application/json;charset=UTF-8")
-            .match_query(Matcher::Regex("closePosition=TRUE&recvWindow=1234&side=SELL&stopPrice=7.4&symbol=SRMUSDT&timestamp=\\d+&type=STOP_MARKET".into()))
+            .match_query(Matcher::Regex("closePosition=true&recvWindow=1234&side=SELL&stopPrice=7.4&symbol=SRMUSDT&timestamp=\\d+&type=STOP_MARKET&signature=.*".into()))
             .with_body_from_file("tests/mocks/futures/account/stop_market_close_position_sell.json")
-            .create();
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let transaction: Transaction = account.stop_market_close_sell("SRMUSDT", 7.4).unwrap();
+        let transaction: Transaction = account.stop_market_close_sell("SRMUSDT", 7.4).await.unwrap(); // .await added
 
         mock_stop_market_close_sell.assert();
 
@@ -183,29 +190,31 @@ mod tests {
         assert!(approx_eq!(f64, transaction.stop_price, 7.4, ulps = 2));
     }
 
-    #[test]
-    fn custom_order() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn custom_order() { // async added
+        let mut server = Server::new_async().await; // async added
+        // This test used the same mock as stop_market_close_sell, if custom_order builds the same query, it's fine.
         let mock_custom_order = server.mock("POST", "/fapi/v1/order")
             .with_header("content-type", "application/json;charset=UTF-8")
-            .match_query(Matcher::Regex("closePosition=TRUE&recvWindow=1234&side=SELL&stopPrice=7.4&symbol=SRMUSDT&timestamp=\\d+&type=STOP_MARKET".into()))
-            .with_body_from_file("tests/mocks/futures/account/stop_market_close_position_sell.json")
-            .create();
+            .match_query(Matcher::Regex("closePosition=true&recvWindow=1234&side=SELL&stopPrice=7.4&symbol=SRMUSDT&timestamp=\\d+&type=STOP_MARKET&signature=.*".into()))
+            .with_body_from_file("tests/mocks/futures/account/stop_market_close_position_sell.json") // Assuming this mock fits
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let custom_order = CustomOrderRequest {
+        let custom_order_request = CustomOrderRequest { // Renamed for clarity
             symbol: "SRMUSDT".into(),
-            side: OrderSide::Sell,
+            side: OrderSide::Sell, // Ensure this is the correct OrderSide from crate::account
             position_side: None,
-            order_type: OrderType::StopMarket,
+            order_type: binance_rs_plus::futures::account::OrderType::StopMarket, // Use qualified OrderType
             time_in_force: None,
-            qty: None,
+            quantity: None, // Changed from qty
             reduce_only: None,
             price: None,
+            new_client_order_id: None,
             stop_price: Some(7.4),
             close_position: Some(true),
             activation_price: None,
@@ -213,7 +222,7 @@ mod tests {
             working_type: None,
             price_protect: None,
         };
-        let transaction: Transaction = account.custom_order(custom_order).unwrap();
+        let transaction: Transaction = account.custom_order(custom_order_request).await.unwrap(); // .await added
 
         mock_custom_order.assert();
 
@@ -224,19 +233,19 @@ mod tests {
         assert!(approx_eq!(f64, transaction.stop_price, 7.4, ulps = 2));
     }
 
-    #[test]
-    fn get_income() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn get_income() { // async added
+        let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("GET", "/fapi/v1/income")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex(
                 "endTime=12345678910&incomeType=TRANSFER&limit=10\
-                &recvWindow=1234&startTime=12345678910&symbol=BTCUSDT&timestamp=\\d+"
+                &recvWindow=1234&startTime=12345678910&symbol=BTCUSDT&timestamp=\\d+&signature=.*" // Added signature
                     .into(),
             ))
             .with_body_from_file("tests/mocks/futures/account/get_income_history.json")
-            .create();
+            .create_async().await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
@@ -250,8 +259,10 @@ mod tests {
             end_time: Some(12345678910),
             limit: Some(10),
         };
-        account.get_income(income_request).unwrap();
+        let income_history: Vec<Income> = account.get_income(income_request).await.unwrap(); // .await added
 
         mock.assert();
+        assert!(!income_history.is_empty());
+        // Add more specific assertions for income history if needed
     }
 }

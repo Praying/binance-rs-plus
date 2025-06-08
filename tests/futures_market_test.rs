@@ -1,28 +1,31 @@
-use binance::api::*;
-use binance::config::*;
-use binance::futures::market::FuturesMarket;
-use binance::futures::model::OpenInterestHist;
+use binance_rs_plus::api::*;
+use binance_rs_plus::config::*;
+use binance_rs_plus::futures::market::FuturesMarket;
+use binance_rs_plus::futures::model::OpenInterestHist;
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockito::{Server, Matcher};
 
-    #[test]
-    fn open_interest_statistics() {
-        let mut server = Server::new();
+    #[tokio::test] // Changed
+    async fn open_interest_statistics() { // async added
+        let mut server = Server::new_async().await; // async added
         let mock_open_interest_statistics = server
             .mock("GET", "/futures/data/openInterestHist")
             .with_header("content-type", "application/json;charset=UTF-8")
+            // Note: This is a public endpoint as per Binance docs, so signature matching might not be needed.
+            // If it were a signed endpoint, the Matcher::Regex would need to include &timestamp=\\d+&signature=.*
             .match_query(Matcher::Regex("limit=10&period=5m&symbol=BTCUSDT".into()))
             .with_body_from_file("tests/mocks/futures/market/open_interest_statistics.json")
-            .create();
+            .create_async().await; // async added
 
         let config = Config::default().set_futures_rest_api_endpoint(server.url());
         let market: FuturesMarket = Binance::new_with_config(None, None, &config);
 
         let open_interest_hists = market
-            .open_interest_statistics("BTCUSDT", "5m", 10, None, None)
+            .open_interest_statistics("BTCUSDT", "5m", Some(10), None, None) // Added Some() for limit
+            .await // .await added
             .unwrap();
         mock_open_interest_statistics.assert();
 

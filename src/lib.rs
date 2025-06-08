@@ -15,6 +15,7 @@
     clippy::semicolon_if_nothing_returned
 )]
 
+pub mod async_websocket_client;
 mod client;
 pub mod errors;
 pub mod util;

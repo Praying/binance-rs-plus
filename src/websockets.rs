@@ -1,20 +1,26 @@
-use crate::errors::Result;
+use crate::async_websocket_client::AsyncWebsocketClient;
 use crate::config::Config;
+use crate::errors::Result;
 use crate::model::{
     AccountUpdateEvent, AggrTradesEvent, BalanceUpdateEvent, BookTickerEvent, DayTickerEvent,
-    WindowTickerEvent, DepthOrderBookEvent, KlineEvent, OrderBook, OrderTradeEvent, TradeEvent,
+    DepthOrderBookEvent, KlineEvent, OrderBook, OrderTradeEvent, TradeEvent, WindowTickerEvent,
 };
-use error_chain::bail;
-use url::Url;
+// New
+
 use serde::{Deserialize, Serialize};
 
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::net::TcpStream;
-use tungstenite::{connect, Message};
-use tungstenite::protocol::WebSocket;
-use tungstenite::stream::MaybeTlsStream;
-use tungstenite::handshake::client::Response;
+use std::future::Future;
+// New
+use std::pin::Pin;
+// New
+use std::sync::atomic::AtomicBool;
+// Ordering might be needed by user
+use std::sync::Arc;
+// New
+use tokio::sync::Mutex as TokioMutex;
+// New for handler
 
+// WebsocketAPI enum remains the same
 #[allow(clippy::all)]
 enum WebsocketAPI {
     Default,
@@ -34,6 +40,7 @@ impl WebsocketAPI {
     }
 }
 
+// WebsocketEvent enum remains the same - this is what the user's handler will receive
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum WebsocketEvent {
@@ -52,12 +59,9 @@ pub enum WebsocketEvent {
     BookTicker(BookTickerEvent),
 }
 
-pub struct WebSockets<'a> {
-    pub socket: Option<(WebSocket<MaybeTlsStream<TcpStream>>, Response)>,
-    handler: Box<dyn FnMut(WebsocketEvent) -> Result<()> + 'a>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+// Events enum is what AsyncWebsocketClient will deserialize into (as E)
+// This needs to be DeserializeOwned + Send + 'a
+#[derive(Serialize, Deserialize, Debug, Clone)] // Added Clone for potential use, ensure it's Send + 'a compatible
 #[serde(untagged)]
 enum Events {
     DayTickerEventAll(Vec<DayTickerEvent>),
@@ -75,99 +79,72 @@ enum Events {
     DepthOrderBookEvent(DepthOrderBookEvent),
 }
 
+// Define the type for the user-provided handler
+type UserCallback<'a> =
+    Box<dyn FnMut(WebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a>;
+
+// Define the type for the adapter handler passed to AsyncWebsocketClient
+type AdapterHandler<'a> =
+    Box<dyn FnMut(Events) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a>;
+
+
+pub struct WebSockets<'a> {
+    client: AsyncWebsocketClient<'a, Events, AdapterHandler<'a>>,
+}
+
 impl<'a> WebSockets<'a> {
-    pub fn new<Callback>(handler: Callback) -> WebSockets<'a>
+    pub fn new<Callback>(user_handler: Callback) -> WebSockets<'a>
     where
-        Callback: FnMut(WebsocketEvent) -> Result<()> + 'a,
+        Callback: FnMut(WebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a,
     {
+        let shared_user_handler = Arc::new(TokioMutex::new(user_handler));
+
+        let adapter_handler: AdapterHandler<'a> = Box::new(move |events_obj: Events| {
+            let user_handler_clone = Arc::clone(&shared_user_handler);
+            Box::pin(async move {
+                let action = match events_obj {
+                    Events::DayTickerEventAll(v) => WebsocketEvent::DayTickerAll(v),
+                    Events::WindowTickerEventAll(v) => WebsocketEvent::WindowTickerAll(v),
+                    Events::BalanceUpdateEvent(v) => WebsocketEvent::BalanceUpdate(v),
+                    Events::DayTickerEvent(v) => WebsocketEvent::DayTicker(v),
+                    Events::WindowTickerEvent(v) => WebsocketEvent::WindowTicker(v),
+                    Events::BookTickerEvent(v) => WebsocketEvent::BookTicker(v),
+                    Events::AccountUpdateEvent(v) => WebsocketEvent::AccountUpdate(v),
+                    Events::OrderTradeEvent(v) => WebsocketEvent::OrderTrade(v),
+                    Events::AggrTradesEvent(v) => WebsocketEvent::AggrTrades(v),
+                    Events::TradeEvent(v) => WebsocketEvent::Trade(v),
+                    Events::KlineEvent(v) => WebsocketEvent::Kline(v),
+                    Events::OrderBook(v) => WebsocketEvent::OrderBook(v),
+                    Events::DepthOrderBookEvent(v) => WebsocketEvent::DepthOrderBook(v),
+                };
+                let mut handler_guard = user_handler_clone.lock().await;
+                (handler_guard)(action).await
+            })
+        });
+
         WebSockets {
-            socket: None,
-            handler: Box::new(handler),
+            client: AsyncWebsocketClient::new(adapter_handler),
         }
     }
 
-    pub fn connect(&mut self, subscription: &str) -> Result<()> {
-        self.connect_wss(&WebsocketAPI::Default.params(subscription))
+    pub async fn connect(&mut self, subscription: &str) -> Result<()> {
+        self.client.connect(&WebsocketAPI::Default.params(subscription)).await
     }
 
-    pub fn connect_with_config(&mut self, subscription: &str, config: &Config) -> Result<()> {
-        self.connect_wss(&WebsocketAPI::Custom(config.ws_endpoint.clone()).params(subscription))
+    pub async fn connect_with_config(&mut self, subscription: &str, config: &Config) -> Result<()> {
+        self.client.connect(&WebsocketAPI::Custom(config.ws_endpoint.clone()).params(subscription)).await
     }
 
-    pub fn connect_multiple_streams(&mut self, endpoints: &[String]) -> Result<()> {
-        self.connect_wss(&WebsocketAPI::MultiStream.params(&endpoints.join("/")))
+    pub async fn connect_multiple_streams(&mut self, endpoints: &[String]) -> Result<()> {
+        self.client.connect(&WebsocketAPI::MultiStream.params(&endpoints.join("/"))).await
     }
 
-    fn connect_wss(&mut self, wss: &str) -> Result<()> {
-        let url = Url::parse(wss)?;
-        match connect(url) {
-            Ok(answer) => {
-                self.socket = Some(answer);
-                Ok(())
-            }
-            Err(e) => bail!(format!("Error during handshake {}", e)),
-        }
+    pub async fn disconnect(&mut self) -> Result<()> {
+        self.client.disconnect().await
     }
 
-    pub fn disconnect(&mut self) -> Result<()> {
-        if let Some(ref mut socket) = self.socket {
-            socket.0.close(None)?;
-            return Ok(());
-        }
-        bail!("Not able to close the connection");
-    }
-
-    pub fn test_handle_msg(&mut self, msg: &str) -> Result<()> {
-        self.handle_msg(msg)
-    }
-
-    pub fn handle_msg(&mut self, msg: &str) -> Result<()> {
-        let value: serde_json::Value = serde_json::from_str(msg)?;
-
-        if let Some(data) = value.get("data") {
-            self.handle_msg(&data.to_string())?;
-            return Ok(());
-        }
-
-        if let Ok(events) = serde_json::from_value::<Events>(value) {
-            let action = match events {
-                Events::DayTickerEventAll(v) => WebsocketEvent::DayTickerAll(v),
-                Events::WindowTickerEventAll(v) => WebsocketEvent::WindowTickerAll(v),
-                Events::BookTickerEvent(v) => WebsocketEvent::BookTicker(v),
-                Events::BalanceUpdateEvent(v) => WebsocketEvent::BalanceUpdate(v),
-                Events::AccountUpdateEvent(v) => WebsocketEvent::AccountUpdate(v),
-                Events::OrderTradeEvent(v) => WebsocketEvent::OrderTrade(v),
-                Events::AggrTradesEvent(v) => WebsocketEvent::AggrTrades(v),
-                Events::TradeEvent(v) => WebsocketEvent::Trade(v),
-                Events::DayTickerEvent(v) => WebsocketEvent::DayTicker(v),
-                Events::WindowTickerEvent(v) => WebsocketEvent::WindowTicker(v),
-                Events::KlineEvent(v) => WebsocketEvent::Kline(v),
-                Events::OrderBook(v) => WebsocketEvent::OrderBook(v),
-                Events::DepthOrderBookEvent(v) => WebsocketEvent::DepthOrderBook(v),
-            };
-            (self.handler)(action)?;
-        }
-        Ok(())
-    }
-
-    pub fn event_loop(&mut self, running: &AtomicBool) -> Result<()> {
-        while running.load(Ordering::Relaxed) {
-            if let Some(ref mut socket) = self.socket {
-                let message = socket.0.read_message()?;
-                match message {
-                    Message::Text(msg) => {
-                        if let Err(e) = self.handle_msg(&msg) {
-                            bail!(format!("Error on handling stream message: {}", e));
-                        }
-                    }
-                    Message::Ping(payload) => {
-                        socket.0.write_message(Message::Pong(payload)).unwrap();
-                    }
-                    Message::Pong(_) | Message::Binary(_) | Message::Frame(_) => (),
-                    Message::Close(e) => bail!(format!("Disconnected {:?}", e)),
-                }
-            }
-        }
-        Ok(())
+    // event_loop now takes Arc<AtomicBool>
+    pub async fn event_loop(&mut self, running: Arc<AtomicBool>) -> Result<()> {
+        self.client.event_loop(running).await
     }
 }
