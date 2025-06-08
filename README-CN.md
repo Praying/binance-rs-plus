@@ -30,7 +30,7 @@
 
 ```toml
 [dependencies]
-binance-rs-plus = "0.21.0" # 或者 crates.io 上的最新版本
+binance-rs-plus = "0.1.0" # 或者 crates.io 上的最新版本
 # binance-rs-plus = { git = "https://github.com/Praying/binance-rs-plus" }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0"
