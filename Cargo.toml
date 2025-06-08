@@ -1,6 +1,6 @@
 [package]
 name = "binance-rs-plus"
-version = "0.21.0"
+version = "0.1.0"
 license = "MIT OR Apache-2.0"
 authors = ["codegpt<codegpt@gmail.com>"]
 edition = "2024"
@@ -8,7 +8,7 @@ edition = "2024"
 description = "Rust Library for the Binance API"
 keywords = ["cryptocurrency", "trading", "binance"]
 categories = ["api-bindings", "cryptography::cryptocurrencies"]
-documentation = "https://docs.rs/crate/binance/"
+documentation = "https://docs.rs/crate/binance-rs-plus/"
 repository = "https://github.com/Praying/binance-rs-plus"
 readme = "README.md"
 
