@@ -1,41 +1,39 @@
 [package]
-name = "binance"
+name = "binance-rs-plus"
 version = "0.21.0"
 license = "MIT OR Apache-2.0"
-authors = ["Flavio Oliveira <ollivera-dev@protonmail.com>"]
-edition = "2021"
+authors = ["codegpt<codegpt@gmail.com>"]
+edition = "2024"
 
 description = "Rust Library for the Binance API"
 keywords = ["cryptocurrency", "trading", "binance"]
 categories = ["api-bindings", "cryptography::cryptocurrencies"]
 documentation = "https://docs.rs/crate/binance/"
-repository = "https://github.com/wisespace-io/binance-rs"
+repository = "https://github.com/Praying/binance-rs-plus"
 readme = "README.md"
 
 [badges]
-travis-ci = { repository = "wisespace-io/binance-rs" }
+travis-ci = { repository = "Praying/binance-rs-plus" }
 
 [lib]
-name = "binance"
+name = "binance_rs_plus"
 path = "src/lib.rs"
 
 [dependencies]
+anyhow = "1.0.86"
+clap = "4.5.39"
+futures-util = "0.3.30" # Added
 hex = "0.4"
 hmac = "0.12.1"
-sha2 = "0.10.8"
+reqwest = { version = "0.11.27", features = ["json", "rustls-tls"], default-features = false }
 serde = { version = "1.0.197", features = ["derive"] }
-serde_json = "1.0"
-error-chain = { version = "0.12.4", default-features = false }
-reqwest = { version = "0.11.24", features = ["blocking", "json"] }
-tungstenite = { version = "0.21.0", features = ["native-tls"] }
+serde_json = "1.0.140"
+sha2 = "0.10.9"
+thiserror = "1.0.69"
+tokio = { version = "1.45.1", features = ["full"] }
+tokio-tungstenite = { version = "0.23.1", features = ["rustls"] }
 url = "2.5.0"
-clap = "4.5.2"
 
-[features]
-vendored-tls = [
-  "reqwest/native-tls-vendored",
-  "tungstenite/native-tls-vendored",
-]
 
 [dev-dependencies]
 csv = "1.3.0"

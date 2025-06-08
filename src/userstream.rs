@@ -7,22 +7,23 @@ use crate::api::Spot;
 #[derive(Clone)]
 pub struct UserStream {
     pub client: Client,
-    pub recv_window: u64,
+    pub recv_window: u64, // This field seems unused in the provided snippet, but we'll keep it.
 }
 
 impl UserStream {
     // User Stream
-    pub fn start(&self) -> Result<UserDataStream> {
-        self.client.post(API::Spot(Spot::UserDataStream))
+    pub async fn start(&self) -> Result<UserDataStream> {
+        self.client.post(API::Spot(Spot::UserDataStream)).await
     }
 
     // Current open orders on a symbol
-    pub fn keep_alive(&self, listen_key: &str) -> Result<Success> {
-        self.client.put(API::Spot(Spot::UserDataStream), listen_key)
+    pub async fn keep_alive(&self, listen_key: &str) -> Result<Success> {
+        self.client.put(API::Spot(Spot::UserDataStream), listen_key).await
     }
 
-    pub fn close(&self, listen_key: &str) -> Result<Success> {
+    pub async fn close(&self, listen_key: &str) -> Result<Success> {
         self.client
             .delete(API::Spot(Spot::UserDataStream), listen_key)
+            .await
     }
 }

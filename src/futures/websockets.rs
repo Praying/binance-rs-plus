@@ -1,20 +1,28 @@
-use crate::errors::Result;
 use crate::config::Config;
+use crate::errors::Result;
+use crate::futures::model as futures_model;
 use crate::model::{
     AccountUpdateEvent, AggrTradesEvent, BookTickerEvent, ContinuousKlineEvent, DayTickerEvent,
     DepthOrderBookEvent, IndexKlineEvent, IndexPriceEvent, KlineEvent, LiquidationEvent,
     MarkPriceEvent, MiniTickerEvent, OrderBook, TradeEvent, UserDataStreamExpiredEvent,
 };
-use crate::futures::model;
-use error_chain::bail;
-use url::Url;
+// Alias for futures specific OrderTradeEvent
+use crate::async_websocket_client::AsyncWebsocketClient;
+// New
+
 use serde::{Deserialize, Serialize};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::net::TcpStream;
-use tungstenite::{connect, Message};
-use tungstenite::protocol::WebSocket;
-use tungstenite::stream::MaybeTlsStream;
-use tungstenite::handshake::client::Response;
+
+use std::future::Future;
+// New
+use std::pin::Pin;
+// New
+use std::sync::atomic::AtomicBool;
+// Ordering might be needed by user
+use std::sync::Arc;
+// New
+use tokio::sync::Mutex as TokioMutex;
+// New for handler
+
 
 #[allow(clippy::all)]
 enum FuturesWebsocketAPI {
@@ -44,7 +52,7 @@ impl FuturesWebsocketAPI {
             FuturesWebsocketAPI::MultiStream => {
                 format!("{}/stream?streams={}", baseurl, subscription)
             }
-            FuturesWebsocketAPI::Custom(url) => url,
+            FuturesWebsocketAPI::Custom(url) => url, // Assuming custom URL is the full WSS URL
         }
     }
 }
@@ -53,7 +61,7 @@ impl FuturesWebsocketAPI {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum FuturesWebsocketEvent {
     AccountUpdate(AccountUpdateEvent),
-    OrderTrade(model::OrderTradeEvent),
+    OrderTrade(futures_model::OrderTradeEvent), // Use aliased model
     AggrTrades(AggrTradesEvent),
     Trade(TradeEvent),
     OrderBook(OrderBook),
@@ -73,21 +81,17 @@ pub enum FuturesWebsocketEvent {
     UserDataStreamExpiredEvent(UserDataStreamExpiredEvent),
 }
 
-pub struct FuturesWebSockets<'a> {
-    pub socket: Option<(WebSocket<MaybeTlsStream<TcpStream>>, Response)>,
-    handler: Box<dyn FnMut(FuturesWebsocketEvent) -> Result<()> + 'a>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+// Events enum is what AsyncWebsocketClient will deserialize into (as E)
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(untagged)]
 enum FuturesEvents {
-    Vec(Vec<DayTickerEvent>),
+    VecDayTicker(Vec<DayTickerEvent>), // Renamed to avoid conflict if used directly in match
     DayTickerEvent(DayTickerEvent),
     BookTickerEvent(BookTickerEvent),
     MiniTickerEvent(MiniTickerEvent),
     VecMiniTickerEvent(Vec<MiniTickerEvent>),
     AccountUpdateEvent(AccountUpdateEvent),
-    OrderTradeEvent(model::OrderTradeEvent),
+    OrderTradeEvent(futures_model::OrderTradeEvent), // Use aliased model
     AggrTradesEvent(AggrTradesEvent),
     IndexPriceEvent(IndexPriceEvent),
     MarkPriceEvent(MarkPriceEvent),
@@ -102,113 +106,91 @@ enum FuturesEvents {
     UserDataStreamExpiredEvent(UserDataStreamExpiredEvent),
 }
 
+
+// Define the type for the user-provided handler
+type UserCallback<'a> =
+    Box<dyn FnMut(FuturesWebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a>;
+
+// Define the type for the adapter handler passed to AsyncWebsocketClient
+type AdapterHandler<'a> =
+    Box<dyn FnMut(FuturesEvents) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a>;
+
+
+pub struct FuturesWebSockets<'a> {
+    client: AsyncWebsocketClient<'a, FuturesEvents, AdapterHandler<'a>>,
+}
+
 impl<'a> FuturesWebSockets<'a> {
-    pub fn new<Callback>(handler: Callback) -> FuturesWebSockets<'a>
+    pub fn new<Callback>(user_handler: Callback) -> FuturesWebSockets<'a>
     where
-        Callback: FnMut(FuturesWebsocketEvent) -> Result<()> + 'a,
+        Callback: FnMut(FuturesWebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a,
     {
+        let shared_user_handler = Arc::new(TokioMutex::new(user_handler));
+
+        let adapter_handler: AdapterHandler<'a> = Box::new(move |events_obj: FuturesEvents| {
+            let user_handler_clone = Arc::clone(&shared_user_handler);
+            Box::pin(async move {
+                let action = match events_obj {
+                    FuturesEvents::VecDayTicker(v) => FuturesWebsocketEvent::DayTickerAll(v),
+                    FuturesEvents::DayTickerEvent(v) => FuturesWebsocketEvent::DayTicker(v),
+                    FuturesEvents::BookTickerEvent(v) => FuturesWebsocketEvent::BookTicker(v),
+                    FuturesEvents::MiniTickerEvent(v) => FuturesWebsocketEvent::MiniTicker(v),
+                    FuturesEvents::VecMiniTickerEvent(v) => FuturesWebsocketEvent::MiniTickerAll(v),
+                    FuturesEvents::AccountUpdateEvent(v) => FuturesWebsocketEvent::AccountUpdate(v),
+                    FuturesEvents::OrderTradeEvent(v) => FuturesWebsocketEvent::OrderTrade(v),
+                    FuturesEvents::IndexPriceEvent(v) => FuturesWebsocketEvent::IndexPrice(v),
+                    FuturesEvents::MarkPriceEvent(v) => FuturesWebsocketEvent::MarkPrice(v),
+                    FuturesEvents::VecMarkPriceEvent(v) => FuturesWebsocketEvent::MarkPriceAll(v),
+                    FuturesEvents::TradeEvent(v) => FuturesWebsocketEvent::Trade(v),
+                    FuturesEvents::ContinuousKlineEvent(v) => FuturesWebsocketEvent::ContinuousKline(v),
+                    FuturesEvents::IndexKlineEvent(v) => FuturesWebsocketEvent::IndexKline(v),
+                    FuturesEvents::LiquidationEvent(v) => FuturesWebsocketEvent::Liquidation(v),
+                    FuturesEvents::KlineEvent(v) => FuturesWebsocketEvent::Kline(v),
+                    FuturesEvents::OrderBook(v) => FuturesWebsocketEvent::OrderBook(v),
+                    FuturesEvents::DepthOrderBookEvent(v) => FuturesWebsocketEvent::DepthOrderBook(v),
+                    FuturesEvents::AggrTradesEvent(v) => FuturesWebsocketEvent::AggrTrades(v),
+                    FuturesEvents::UserDataStreamExpiredEvent(v) => {
+                        FuturesWebsocketEvent::UserDataStreamExpiredEvent(v)
+                    }
+                };
+                let mut handler_guard = user_handler_clone.lock().await;
+                (handler_guard)(action).await
+            })
+        });
+
         FuturesWebSockets {
-            socket: None,
-            handler: Box::new(handler),
+            client: AsyncWebsocketClient::new(adapter_handler),
         }
     }
 
-    pub fn connect(&mut self, market: &FuturesMarket, subscription: &'a str) -> Result<()> {
-        self.connect_wss(&FuturesWebsocketAPI::Default.params(market, subscription))
+    pub async fn connect(&mut self, market: &FuturesMarket, subscription: &'a str) -> Result<()> {
+        self.client.connect(&FuturesWebsocketAPI::Default.params(market, subscription)).await
     }
 
-    pub fn connect_with_config(
+    pub async fn connect_with_config(
         &mut self, market: &FuturesMarket, subscription: &'a str, config: &'a Config,
     ) -> Result<()> {
-        self.connect_wss(
-            &FuturesWebsocketAPI::Custom(config.ws_endpoint.clone()).params(market, subscription),
-        )
+        let wss_url = if config.ws_endpoint.contains("wss://") || config.ws_endpoint.contains("ws://") {
+             // If config.ws_endpoint is already a full URL, use it directly
+            config.ws_endpoint.clone()
+        } else {
+            // Otherwise, assume it's a base path and use FuturesWebsocketAPI::Custom to format it
+            FuturesWebsocketAPI::Custom(config.ws_endpoint.clone()).params(market, subscription)
+        };
+        self.client.connect(&wss_url).await
     }
 
-    pub fn connect_multiple_streams(
+    pub async fn connect_multiple_streams(
         &mut self, market: &FuturesMarket, endpoints: &[String],
     ) -> Result<()> {
-        self.connect_wss(&FuturesWebsocketAPI::MultiStream.params(market, &endpoints.join("/")))
+        self.client.connect(&FuturesWebsocketAPI::MultiStream.params(market, &endpoints.join("/"))).await
     }
 
-    fn connect_wss(&mut self, wss: &str) -> Result<()> {
-        let url = Url::parse(wss)?;
-        match connect(url) {
-            Ok(answer) => {
-                self.socket = Some(answer);
-                Ok(())
-            }
-            Err(e) => bail!(format!("Error during handshake {}", e)),
-        }
+    pub async fn disconnect(&mut self) -> Result<()> {
+        self.client.disconnect().await
     }
 
-    pub fn disconnect(&mut self) -> Result<()> {
-        if let Some(ref mut socket) = self.socket {
-            socket.0.close(None)?;
-            return Ok(());
-        }
-        bail!("Not able to close the connection");
-    }
-
-    pub fn test_handle_msg(&mut self, msg: &str) -> Result<()> {
-        self.handle_msg(msg)
-    }
-
-    pub fn handle_msg(&mut self, msg: &str) -> Result<()> {
-        let value: serde_json::Value = serde_json::from_str(msg)?;
-
-        if let Some(data) = value.get("data") {
-            self.handle_msg(&data.to_string())?;
-            return Ok(());
-        }
-
-        if let Ok(events) = serde_json::from_value::<FuturesEvents>(value) {
-            let action = match events {
-                FuturesEvents::Vec(v) => FuturesWebsocketEvent::DayTickerAll(v),
-                FuturesEvents::DayTickerEvent(v) => FuturesWebsocketEvent::DayTicker(v),
-                FuturesEvents::BookTickerEvent(v) => FuturesWebsocketEvent::BookTicker(v),
-                FuturesEvents::MiniTickerEvent(v) => FuturesWebsocketEvent::MiniTicker(v),
-                FuturesEvents::VecMiniTickerEvent(v) => FuturesWebsocketEvent::MiniTickerAll(v),
-                FuturesEvents::AccountUpdateEvent(v) => FuturesWebsocketEvent::AccountUpdate(v),
-                FuturesEvents::OrderTradeEvent(v) => FuturesWebsocketEvent::OrderTrade(v),
-                FuturesEvents::IndexPriceEvent(v) => FuturesWebsocketEvent::IndexPrice(v),
-                FuturesEvents::MarkPriceEvent(v) => FuturesWebsocketEvent::MarkPrice(v),
-                FuturesEvents::VecMarkPriceEvent(v) => FuturesWebsocketEvent::MarkPriceAll(v),
-                FuturesEvents::TradeEvent(v) => FuturesWebsocketEvent::Trade(v),
-                FuturesEvents::ContinuousKlineEvent(v) => FuturesWebsocketEvent::ContinuousKline(v),
-                FuturesEvents::IndexKlineEvent(v) => FuturesWebsocketEvent::IndexKline(v),
-                FuturesEvents::LiquidationEvent(v) => FuturesWebsocketEvent::Liquidation(v),
-                FuturesEvents::KlineEvent(v) => FuturesWebsocketEvent::Kline(v),
-                FuturesEvents::OrderBook(v) => FuturesWebsocketEvent::OrderBook(v),
-                FuturesEvents::DepthOrderBookEvent(v) => FuturesWebsocketEvent::DepthOrderBook(v),
-                FuturesEvents::AggrTradesEvent(v) => FuturesWebsocketEvent::AggrTrades(v),
-                FuturesEvents::UserDataStreamExpiredEvent(v) => {
-                    FuturesWebsocketEvent::UserDataStreamExpiredEvent(v)
-                }
-            };
-            (self.handler)(action)?;
-        }
-        Ok(())
-    }
-
-    pub fn event_loop(&mut self, running: &AtomicBool) -> Result<()> {
-        while running.load(Ordering::Relaxed) {
-            if let Some(ref mut socket) = self.socket {
-                let message = socket.0.read_message()?;
-                match message {
-                    Message::Text(msg) => {
-                        if let Err(e) = self.handle_msg(&msg) {
-                            bail!(format!("Error on handling stream message: {}", e));
-                        }
-                    }
-                    Message::Ping(payload) => {
-                        socket.0.write_message(Message::Pong(payload)).unwrap();
-                    }
-                    Message::Pong(_) | Message::Binary(_) | Message::Frame(_) => (),
-                    Message::Close(e) => bail!(format!("Disconnected {:?}", e)),
-                }
-            }
-        }
-        bail!("running loop closed");
+    pub async fn event_loop(&mut self, running: Arc<AtomicBool>) -> Result<()> {
+        self.client.event_loop(running).await
     }
 }
