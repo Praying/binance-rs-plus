@@ -34,7 +34,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-binance-rs-plus = "0.1.0" # Or the latest version from crates.io
+binance-rs-plus = "0.1.1" # Or the latest version from crates.io
 # For using the git version:
 # binance-rs-plus = { git = "https://github.com/Praying/binance-rs-plus" }
 tokio = { version = "1", features = ["full"] }
