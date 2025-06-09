@@ -5,7 +5,7 @@
 
 [![Fork Origin](https://img.shields.io/badge/Origin-wisespace__io/binance__rs-6f42c1?style=flat&logo=git)](https://github.com/wisespace-io/binance-rs-plus)
 
-> 📢 **Derivative Notice**: This project is derived from [binance-rs](https://github.com/wisespace-io/binance-rs-plus),  
+> 📢 **Derivative Notice**: This project is derived from [binance-rs](https://github.com/wisespace-io/binance-rs),  
 > with acknowledgments to the original author [@wisespace-io](https://github.com/wisespace-io) for their contribution
 
 </div>
@@ -16,7 +16,7 @@ Unofficial Rust Library for the [Binance API](https://github.com/binance/binance
 [![中文](https://img.shields.io/badge/语言-中文-red?style=flat-square)](README-CN.md)
 [![Crates.io](https://img.shields.io/crates/v/binance-rs-plus.svg)](https://crates.io/crates/binance-rs-plus)
 [![Build Status](https://travis-ci.org/wisespace-io/binance-rs-plus.png?branch=master)](https://travis-ci.org/wisespace-io/binance-rs-plus)
-[![CI](https://github.com/wisespace-io/binance-rs-plus/workflows/Rust/badge.svg)](https://github.com/wisespace-io/binance-rs-plus/actions?query=workflow%3ARust)
+[![CI](https://github.com/Praying/binance-rs-plus/workflows/Rust/badge.svg)](https://github.com/Praying/binance-rs-plus/actions?query=workflow%3ARust)
 [![MIT licensed](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE-MIT)
 [![Apache-2.0 licensed](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE-APACHE)
 [![Forked from](https://img.shields.io/badge/Forked%20from-wisespace--io/binance--rs-blue?style=flat-square&logo=github)](https://github.com/wisespace-io/binance-rs-plus)

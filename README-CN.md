@@ -4,7 +4,7 @@
 
 [![Fork Relationship](https://img.shields.io/badge/Origin-wisespace__io/binance__rs-6f42c1?style=flat&logo=git)](https://github.com/wisespace-io/binance-rs-plus)
 
-> 📢 **衍生声明**：此项目衍生自 [binance-rs](https://github.com/wisespace-io/binance-rs-plus)，  
+> 📢 **衍生声明**：此项目衍生自 [binance-rs](https://github.com/wisespace-io/binance-rs)，  
 > 感谢原始作者 [@wisespace-io](https://github.com/wisespace-io) 的贡献
 
 </div>
@@ -13,7 +13,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/binance-rs-plus.svg)](https://crates.io/crates/binance-rs-plus)
 [![Build Status](https://travis-ci.org/wisespace-io/binance-rs-plus.png?branch=master)](https://travis-ci.org/wisespace-io/binance-rs-plus)
-[![CI](https://github.com/wisespace-io/binance-rs-plus/workflows/Rust/badge.svg)](https://github.com/wisespace-io/binance-rs-plus/actions?query=workflow%3ARust)
+[![CI](https://github.com/Praying/binance-rs-plus/workflows/Rust/badge.svg)](https://github.com/Praying/binance-rs-plus/actions?query=workflow%3ARust)
 [![MIT licensed](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE-MIT)
 [![Apache-2.0 licensed](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE-APACHE)
 
