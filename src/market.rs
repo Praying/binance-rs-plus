@@ -19,10 +19,7 @@ pub struct Market {
 // Market Data endpoints
 impl Market {
     // Order book at the default depth of 100
-    pub async fn get_depth<S>(
-        &self,
-        symbol: S,
-    ) -> Result<OrderBook>
+    pub async fn get_depth<S>(&self, symbol: S) -> Result<OrderBook>
     // async added
     where
         S: Into<String>,
@@ -35,11 +32,7 @@ impl Market {
 
     // Order book at a custom depth. Currently supported values
     // are 5, 10, 20, 50, 100, 500, 1000 and 5000
-    pub async fn get_custom_depth<S>(
-        &self,
-        symbol: S,
-        depth: u64,
-    ) -> Result<OrderBook>
+    pub async fn get_custom_depth<S>(&self, symbol: S, depth: u64) -> Result<OrderBook>
     // async added
     where
         S: Into<String>,
@@ -58,10 +51,7 @@ impl Market {
     }
 
     // Latest price for ONE symbol.
-    pub async fn get_price<S>(
-        &self,
-        symbol: S,
-    ) -> Result<SymbolPrice>
+    pub async fn get_price<S>(&self, symbol: S) -> Result<SymbolPrice>
     // async added
     where
         S: Into<String>,
@@ -73,10 +63,7 @@ impl Market {
     }
 
     // Average price for ONE symbol.
-    pub async fn get_average_price<S>(
-        &self,
-        symbol: S,
-    ) -> Result<AveragePrice>
+    pub async fn get_average_price<S>(&self, symbol: S) -> Result<AveragePrice>
     // async added
     where
         S: Into<String>,
@@ -97,10 +84,7 @@ impl Market {
     }
 
     // -> Best price/qty on the order book for ONE symbol
-    pub async fn get_book_ticker<S>(
-        &self,
-        symbol: S,
-    ) -> Result<Tickers>
+    pub async fn get_book_ticker<S>(&self, symbol: S) -> Result<Tickers>
     // async added
     where
         S: Into<String>,
@@ -114,10 +98,7 @@ impl Market {
     }
 
     // 24hr ticker price change statistics
-    pub async fn get_24h_price_stats<S>(
-        &self,
-        symbol: S,
-    ) -> Result<PriceStats>
+    pub async fn get_24h_price_stats<S>(&self, symbol: S) -> Result<PriceStats>
     // async added
     where
         S: Into<String>,

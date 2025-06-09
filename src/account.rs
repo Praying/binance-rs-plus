@@ -55,10 +55,7 @@ impl OrderType {
 }
 
 impl Display for OrderType {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Limit => write!(f, "LIMIT"),
             Self::Market => write!(f, "MARKET"),
@@ -84,10 +81,7 @@ impl OrderSide {
 }
 
 impl Display for OrderSide {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Buy => write!(f, "BUY"),
             Self::Sell => write!(f, "SELL"),
@@ -115,10 +109,7 @@ impl TimeInForce {
 }
 
 impl Display for TimeInForce {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::GTC => write!(f, "GTC"),
             Self::IOC => write!(f, "IOC"),
@@ -137,10 +128,7 @@ impl Account {
     }
 
     // Balance for a single Asset
-    pub async fn get_balance<S>(
-        &self,
-        asset: S,
-    ) -> Result<Balance>
+    pub async fn get_balance<S>(&self, asset: S) -> Result<Balance>
     where
         S: Into<String>,
     {
@@ -159,10 +147,7 @@ impl Account {
     }
 
     // Current open orders for ONE symbol
-    pub async fn get_open_orders<S>(
-        &self,
-        symbol: S,
-    ) -> Result<Vec<Order>>
+    pub async fn get_open_orders<S>(&self, symbol: S) -> Result<Vec<Order>>
     where
         S: Into<String>,
     {
@@ -186,10 +171,7 @@ impl Account {
     }
 
     // Cancel all open orders for a single symbol
-    pub async fn cancel_all_open_orders<S>(
-        &self,
-        symbol: S,
-    ) -> Result<Vec<OrderCanceled>>
+    pub async fn cancel_all_open_orders<S>(&self, symbol: S) -> Result<Vec<OrderCanceled>>
     where
         S: Into<String>,
     {
@@ -202,11 +184,7 @@ impl Account {
     }
 
     // Check an order's status
-    pub async fn order_status<S>(
-        &self,
-        symbol: S,
-        order_id: u64,
-    ) -> Result<Order>
+    pub async fn order_status<S>(&self, symbol: S, order_id: u64) -> Result<Order>
     where
         S: Into<String>,
     {
@@ -223,11 +201,7 @@ impl Account {
     /// Place a test status order
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
-    pub async fn test_order_status<S>(
-        &self,
-        symbol: S,
-        order_id: u64,
-    ) -> Result<()>
+    pub async fn test_order_status<S>(&self, symbol: S, order_id: u64) -> Result<()>
     where
         S: Into<String>,
     {
@@ -243,12 +217,7 @@ impl Account {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-    ) -> Result<Transaction>
+    pub async fn limit_buy<S, F>(&self, symbol: S, qty: F, price: f64) -> Result<Transaction>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -273,12 +242,7 @@ impl Account {
     /// Place a test limit order - BUY
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
-    pub async fn test_limit_buy<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-    ) -> Result<()>
+    pub async fn test_limit_buy<S, F>(&self, symbol: S, qty: F, price: f64) -> Result<()>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -302,12 +266,7 @@ impl Account {
     }
 
     // Place a LIMIT order - SELL
-    pub async fn limit_sell<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-    ) -> Result<Transaction>
+    pub async fn limit_sell<S, F>(&self, symbol: S, qty: F, price: f64) -> Result<Transaction>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -332,12 +291,7 @@ impl Account {
     /// Place a test LIMIT order - SELL
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
-    pub async fn test_limit_sell<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-    ) -> Result<()>
+    pub async fn test_limit_sell<S, F>(&self, symbol: S, qty: F, price: f64) -> Result<()>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -361,11 +315,7 @@ impl Account {
     }
 
     // Place a MARKET order - BUY
-    pub async fn market_buy<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-    ) -> Result<Transaction>
+    pub async fn market_buy<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -390,11 +340,7 @@ impl Account {
     /// Place a test MARKET order - BUY
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
-    pub async fn test_market_buy<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-    ) -> Result<()>
+    pub async fn test_market_buy<S, F>(&self, symbol: S, qty: F) -> Result<()>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -419,9 +365,7 @@ impl Account {
 
     // Place a MARKET order with quote quantity - BUY
     pub async fn market_buy_using_quote_quantity<S, F>(
-        &self,
-        symbol: S,
-        quote_order_qty: F,
+        &self, symbol: S, quote_order_qty: F,
     ) -> Result<Transaction>
     where
         S: Into<String>,
@@ -447,9 +391,7 @@ impl Account {
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
     pub async fn test_market_buy_using_quote_quantity<S, F>(
-        &self,
-        symbol: S,
-        quote_order_qty: F,
+        &self, symbol: S, quote_order_qty: F,
     ) -> Result<()>
     where
         S: Into<String>,
@@ -473,11 +415,7 @@ impl Account {
     }
 
     // Place a MARKET order - SELL
-    pub async fn market_sell<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-    ) -> Result<Transaction>
+    pub async fn market_sell<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -502,11 +440,7 @@ impl Account {
     /// Place a test MARKET order - SELL
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
-    pub async fn test_market_sell<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-    ) -> Result<()>
+    pub async fn test_market_sell<S, F>(&self, symbol: S, qty: F) -> Result<()>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -531,9 +465,7 @@ impl Account {
 
     // Place a MARKET order with quote quantity - SELL
     pub async fn market_sell_using_quote_quantity<S, F>(
-        &self,
-        symbol: S,
-        quote_order_qty: F,
+        &self, symbol: S, quote_order_qty: F,
     ) -> Result<Transaction>
     where
         S: Into<String>,
@@ -559,9 +491,7 @@ impl Account {
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
     pub async fn test_market_sell_using_quote_quantity<S, F>(
-        &self,
-        symbol: S,
-        quote_order_qty: F,
+        &self, symbol: S, quote_order_qty: F,
     ) -> Result<()>
     where
         S: Into<String>,
@@ -605,11 +535,7 @@ impl Account {
     /// }
     /// ```
     pub async fn stop_limit_buy_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        stop_price: f64,
+        &self, symbol: S, qty: F, price: f64, stop_price: f64,
     ) -> Result<Transaction>
     where
         S: Into<String>,
@@ -654,11 +580,7 @@ impl Account {
     /// }
     /// ```
     pub async fn test_stop_limit_buy_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        stop_price: f64,
+        &self, symbol: S, qty: F, price: f64, stop_price: f64,
     ) -> Result<()>
     where
         S: Into<String>,
@@ -703,11 +625,7 @@ impl Account {
     /// }
     /// ```
     pub async fn stop_limit_sell_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        stop_price: f64,
+        &self, symbol: S, qty: F, price: f64, stop_price: f64,
     ) -> Result<Transaction>
     where
         S: Into<String>,
@@ -752,11 +670,7 @@ impl Account {
     /// }
     /// ```
     pub async fn test_stop_limit_sell_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        stop_price: f64,
+        &self, symbol: S, qty: F, price: f64, stop_price: f64,
     ) -> Result<()>
     where
         S: Into<String>,
@@ -782,14 +696,8 @@ impl Account {
 
     /// Create a custom order
     pub async fn custom_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        order_side: OrderSide,
-        order_type: OrderType,
-        time_in_force: TimeInForce,
-        new_client_order_id: Option<String>,
+        &self, symbol: S, qty: F, price: f64, order_side: OrderSide, order_type: OrderType,
+        time_in_force: TimeInForce, new_client_order_id: Option<String>,
     ) -> Result<Transaction>
     where
         S: Into<String>,
@@ -816,14 +724,8 @@ impl Account {
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
     pub async fn test_custom_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        order_side: OrderSide,
-        order_type: OrderType,
-        time_in_force: TimeInForce,
-        new_client_order_id: Option<String>,
+        &self, symbol: S, qty: F, price: f64, order_side: OrderSide, order_type: OrderType,
+        time_in_force: TimeInForce, new_client_order_id: Option<String>,
     ) -> Result<()>
     where
         S: Into<String>,
@@ -848,11 +750,7 @@ impl Account {
     }
 
     // Cancel an order
-    pub async fn cancel_order<S>(
-        &self,
-        symbol: S,
-        order_id: u64,
-    ) -> Result<OrderCanceled>
+    pub async fn cancel_order<S>(&self, symbol: S, order_id: u64) -> Result<OrderCanceled>
     where
         S: Into<String>,
     {
@@ -866,9 +764,7 @@ impl Account {
             .await
     }
     pub async fn cancel_order_with_client_id<S>(
-        &self,
-        symbol: S,
-        client_order_id: String,
+        &self, symbol: S, client_order_id: String,
     ) -> Result<OrderCanceled>
     where
         S: Into<String>,
@@ -886,11 +782,7 @@ impl Account {
     /// Place a test cancel order
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
-    pub async fn test_cancel_order<S>(
-        &self,
-        symbol: S,
-        order_id: u64,
-    ) -> Result<()>
+    pub async fn test_cancel_order<S>(&self, symbol: S, order_id: u64) -> Result<()>
     where
         S: Into<String>,
     {
@@ -906,10 +798,7 @@ impl Account {
     }
 
     // Trade History
-    pub async fn trade_history<S>(
-        &self,
-        symbol: S,
-    ) -> Result<Vec<TradeHistory>>
+    pub async fn trade_history<S>(&self, symbol: S) -> Result<Vec<TradeHistory>>
     where
         S: Into<String>,
     {
@@ -924,9 +813,7 @@ impl Account {
 
     // Trade History from a start time
     pub async fn trade_history_from<S>(
-        &self,
-        symbol: S,
-        start_time: u64,
+        &self, symbol: S, start_time: u64,
     ) -> Result<Vec<TradeHistory>>
     where
         S: Into<String>,
@@ -943,10 +830,7 @@ impl Account {
 
     // Trade History from a start time to an end time
     pub async fn trade_history_from_to<S>(
-        &self,
-        symbol: S,
-        start_time: u64,
-        end_time: u64,
+        &self, symbol: S, start_time: u64, end_time: u64,
     ) -> Result<Vec<TradeHistory>>
     where
         S: Into<String>,
@@ -960,10 +844,7 @@ impl Account {
         }
     }
     async fn get_trades<S>(
-        &self,
-        symbol: S,
-        start_time: u64,
-        end_time: u64,
+        &self, symbol: S, start_time: u64, end_time: u64,
     ) -> Result<Vec<TradeHistory>>
     where
         S: Into<String>,
@@ -981,10 +862,7 @@ impl Account {
         Ok(trades)
     }
 
-    fn build_order(
-        &self,
-        order: OrderRequest,
-    ) -> BTreeMap<String, String> {
+    fn build_order(&self, order: OrderRequest) -> BTreeMap<String, String> {
         let mut open_order: BTreeMap<String, String> = BTreeMap::new();
 
         open_order.insert("symbol".into(), order.symbol);
@@ -1008,8 +886,7 @@ impl Account {
     }
 
     fn build_quote_quantity_order(
-        &self,
-        order: OrderQuoteQuantityRequest,
+        &self, order: OrderQuoteQuantityRequest,
     ) -> BTreeMap<String, String> {
         let mut open_order: BTreeMap<String, String> = BTreeMap::new();
 

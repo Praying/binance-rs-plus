@@ -33,10 +33,7 @@ impl General {
     }
 
     // Get Symbol information
-    pub async fn get_symbol_info<S>(
-        &self,
-        symbol: S,
-    ) -> Result<Symbol>
+    pub async fn get_symbol_info<S>(&self, symbol: S) -> Result<Symbol>
     // async added
     where
         S: Into<String>,

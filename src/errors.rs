@@ -9,10 +9,7 @@ pub struct BinanceContentError {
 }
 
 impl fmt::Display for BinanceContentError {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "code: {}, message: {}", self.code, self.msg)
     }
 }

@@ -37,11 +37,7 @@ pub enum FuturesMarket {
 }
 
 impl FuturesWebsocketAPI {
-    fn params(
-        self,
-        market: &FuturesMarket,
-        subscription: &str,
-    ) -> String {
+    fn params(self, market: &FuturesMarket, subscription: &str) -> String {
         let baseurl = match market {
             FuturesMarket::USDM => "wss://fstream.binance.com",
             FuturesMarket::COINM => "wss://dstream.binance.com",
@@ -171,21 +167,14 @@ impl<'a> FuturesWebSockets<'a> {
         }
     }
 
-    pub async fn connect(
-        &mut self,
-        market: &FuturesMarket,
-        subscription: &'a str,
-    ) -> Result<()> {
+    pub async fn connect(&mut self, market: &FuturesMarket, subscription: &'a str) -> Result<()> {
         self.client
             .connect(&FuturesWebsocketAPI::Default.params(market, subscription))
             .await
     }
 
     pub async fn connect_with_config(
-        &mut self,
-        market: &FuturesMarket,
-        subscription: &'a str,
-        config: &'a Config,
+        &mut self, market: &FuturesMarket, subscription: &'a str, config: &'a Config,
     ) -> Result<()> {
         let wss_url =
             if config.ws_endpoint.contains("wss://") || config.ws_endpoint.contains("ws://") {
@@ -199,9 +188,7 @@ impl<'a> FuturesWebSockets<'a> {
     }
 
     pub async fn connect_multiple_streams(
-        &mut self,
-        market: &FuturesMarket,
-        endpoints: &[String],
+        &mut self, market: &FuturesMarket, endpoints: &[String],
     ) -> Result<()> {
         self.client
             .connect(&FuturesWebsocketAPI::MultiStream.params(market, &endpoints.join("/")))
@@ -212,10 +199,7 @@ impl<'a> FuturesWebSockets<'a> {
         self.client.disconnect().await
     }
 
-    pub async fn event_loop(
-        &mut self,
-        running: Arc<AtomicBool>,
-    ) -> Result<()> {
+    pub async fn event_loop(&mut self, running: Arc<AtomicBool>) -> Result<()> {
         self.client.event_loop(running).await
     }
 }

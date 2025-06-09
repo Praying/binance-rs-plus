@@ -18,19 +18,13 @@ impl FuturesUserStream {
             .await
     }
 
-    pub async fn keep_alive(
-        &self,
-        listen_key: &str,
-    ) -> Result<Success> {
+    pub async fn keep_alive(&self, listen_key: &str) -> Result<Success> {
         self.client
             .put(API::Futures(Futures::UserDataStream), listen_key)
             .await
     }
 
-    pub async fn close(
-        &self,
-        listen_key: &str,
-    ) -> Result<Success> {
+    pub async fn close(&self, listen_key: &str) -> Result<Success> {
         self.client
             .delete(API::Futures(Futures::UserDataStream), listen_key)
             .await

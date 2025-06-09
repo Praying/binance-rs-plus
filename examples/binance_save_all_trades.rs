@@ -33,8 +33,7 @@ async fn save_all_trades_websocket() -> Result<()> {
 
         // serialize DayTickerEvent as CSV records
         pub fn write_to_file(
-            &mut self,
-            events: Vec<DayTickerEvent>,
+            &mut self, events: Vec<DayTickerEvent>,
         ) -> Result<(), Box<dyn StdError>> {
             for event in events {
                 self.wrt.serialize(event)?;

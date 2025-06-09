@@ -38,10 +38,7 @@ where
         }
     }
 
-    pub async fn connect(
-        &self,
-        wss_url: &str,
-    ) -> Result<()> {
+    pub async fn connect(&self, wss_url: &str) -> Result<()> {
         let url_obj = Url::parse(wss_url).map_err(Error::UrlParser)?;
         let (ws_stream, _response) = connect_async(url_obj.as_str()) // Convert Url to &str
             .await
@@ -63,10 +60,7 @@ where
         }
     }
 
-    async fn handle_message_text(
-        &self,
-        msg_text: String,
-    ) -> Result<()> {
+    async fn handle_message_text(&self, msg_text: String) -> Result<()> {
         // This parsing logic might need to be customized based on how
         // Binance wraps multi-stream data or other specific message formats.
         // For now, assuming direct deserialization or a simple 'data' field check.
@@ -117,10 +111,7 @@ where
         }
     }
 
-    pub async fn event_loop(
-        &self,
-        running: Arc<std::sync::atomic::AtomicBool>,
-    ) -> Result<()> {
+    pub async fn event_loop(&self, running: Arc<std::sync::atomic::AtomicBool>) -> Result<()> {
         while running.load(std::sync::atomic::Ordering::Relaxed) {
             let mut socket_guard = self.socket.lock().await;
             if let Some(stream) = socket_guard.as_mut() {

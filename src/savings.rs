@@ -24,8 +24,7 @@ impl Savings {
 
     /// Fetch details of assets supported on Binance.
     pub async fn asset_detail(
-        &self,
-        asset: Option<String>,
+        &self, asset: Option<String>,
     ) -> Result<BTreeMap<String, AssetDetail>> {
         // async added
         let mut parameters = BTreeMap::new();
@@ -44,9 +43,7 @@ impl Savings {
     /// You can get the available networks using `get_all_coins`.
     /// If no network is specified, the address for the default network is returned.
     pub async fn deposit_address<S>(
-        &self,
-        coin: S,
-        network: Option<String>,
+        &self, coin: S, network: Option<String>,
     ) -> Result<DepositAddress>
     // async added
     where

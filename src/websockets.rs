@@ -29,10 +29,7 @@ enum WebsocketAPI {
 }
 
 impl WebsocketAPI {
-    fn params(
-        self,
-        subscription: &str,
-    ) -> String {
+    fn params(self, subscription: &str) -> String {
         match self {
             WebsocketAPI::Default => format!("wss://stream.binance.com/ws/{}", subscription),
             WebsocketAPI::MultiStream => {
@@ -129,29 +126,19 @@ impl<'a> WebSockets<'a> {
         }
     }
 
-    pub async fn connect(
-        &mut self,
-        subscription: &str,
-    ) -> Result<()> {
+    pub async fn connect(&mut self, subscription: &str) -> Result<()> {
         self.client
             .connect(&WebsocketAPI::Default.params(subscription))
             .await
     }
 
-    pub async fn connect_with_config(
-        &mut self,
-        subscription: &str,
-        config: &Config,
-    ) -> Result<()> {
+    pub async fn connect_with_config(&mut self, subscription: &str, config: &Config) -> Result<()> {
         self.client
             .connect(&WebsocketAPI::Custom(config.ws_endpoint.clone()).params(subscription))
             .await
     }
 
-    pub async fn connect_multiple_streams(
-        &mut self,
-        endpoints: &[String],
-    ) -> Result<()> {
+    pub async fn connect_multiple_streams(&mut self, endpoints: &[String]) -> Result<()> {
         self.client
             .connect(&WebsocketAPI::MultiStream.params(&endpoints.join("/")))
             .await
@@ -162,10 +149,7 @@ impl<'a> WebSockets<'a> {
     }
 
     // event_loop now takes Arc<AtomicBool>
-    pub async fn event_loop(
-        &mut self,
-        running: Arc<AtomicBool>,
-    ) -> Result<()> {
+    pub async fn event_loop(&mut self, running: Arc<AtomicBool>) -> Result<()> {
         self.client.event_loop(running).await
     }
 }

@@ -45,10 +45,7 @@ pub struct FuturesMarket {
 
 impl FuturesMarket {
     // Order book (Default 100; max 1000)
-    pub async fn get_depth<S>(
-        &self,
-        symbol: S,
-    ) -> Result<OrderBook>
+    pub async fn get_depth<S>(&self, symbol: S) -> Result<OrderBook>
     // async added
     where
         S: Into<String>,
@@ -65,11 +62,7 @@ impl FuturesMarket {
 
     // Order book at a custom depth. Currently supported values
     // are 5, 10, 20, 50, 100, 500, 1000
-    pub async fn get_custom_depth<S>(
-        &self,
-        symbol: S,
-        depth: u64,
-    ) -> Result<OrderBook>
+    pub async fn get_custom_depth<S>(&self, symbol: S, depth: u64) -> Result<OrderBook>
     // async added
     where
         S: Into<String>,
@@ -83,10 +76,7 @@ impl FuturesMarket {
             .await // .await added
     }
 
-    pub async fn get_trades<S>(
-        &self,
-        symbol: S,
-    ) -> Result<Trades>
+    pub async fn get_trades<S>(&self, symbol: S) -> Result<Trades>
     // async added
     where
         S: Into<String>,
@@ -223,10 +213,7 @@ impl FuturesMarket {
     }
 
     // 24hr ticker price change statistics
-    pub async fn get_24h_price_stats<S>(
-        &self,
-        symbol: S,
-    ) -> Result<PriceStats>
+    pub async fn get_24h_price_stats<S>(&self, symbol: S) -> Result<PriceStats>
     // async added
     where
         S: Into<String>,
@@ -250,10 +237,7 @@ impl FuturesMarket {
     }
 
     // Latest price for ONE symbol.
-    pub async fn get_price<S>(
-        &self,
-        symbol: S,
-    ) -> Result<SymbolPrice>
+    pub async fn get_price<S>(&self, symbol: S) -> Result<SymbolPrice>
     // async added
     where
         S: Into<String>,
@@ -286,10 +270,7 @@ impl FuturesMarket {
     }
 
     // -> Best price/qty on the order book for ONE symbol
-    pub async fn get_book_ticker<S>(
-        &self,
-        symbol: S,
-    ) -> Result<Tickers>
+    pub async fn get_book_ticker<S>(&self, symbol: S) -> Result<Tickers>
     // async added
     where
         S: Into<String>,
@@ -316,10 +297,7 @@ impl FuturesMarket {
             .await // .await added
     }
 
-    pub async fn open_interest<S>(
-        &self,
-        symbol: S,
-    ) -> Result<OpenInterest>
+    pub async fn open_interest<S>(&self, symbol: S) -> Result<OpenInterest>
     // async added
     where
         S: Into<String>,

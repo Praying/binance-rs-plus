@@ -17,11 +17,7 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(
-        api_key: Option<String>,
-        secret_key: Option<String>,
-        host: String,
-    ) -> Self {
+    pub fn new(api_key: Option<String>, secret_key: Option<String>, host: String) -> Self {
         Client {
             api_key: api_key.unwrap_or_default(),
             secret_key: secret_key.unwrap_or_default(),
@@ -34,9 +30,7 @@ impl Client {
     }
 
     pub async fn get_signed<T: DeserializeOwned>(
-        &self,
-        endpoint: API,
-        request: Option<String>,
+        &self, endpoint: API, request: Option<String>,
     ) -> Result<T> {
         let url = self.sign_request(endpoint, request);
         let client = &self.inner_client;
@@ -50,9 +44,7 @@ impl Client {
     }
 
     pub async fn post_signed<T: DeserializeOwned>(
-        &self,
-        endpoint: API,
-        request: String,
+        &self, endpoint: API, request: String,
     ) -> Result<T> {
         let url = self.sign_request(endpoint, Some(request));
         let client = &self.inner_client;
@@ -66,9 +58,7 @@ impl Client {
     }
 
     pub async fn delete_signed<T: DeserializeOwned>(
-        &self,
-        endpoint: API,
-        request: Option<String>,
+        &self, endpoint: API, request: Option<String>,
     ) -> Result<T> {
         let url = self.sign_request(endpoint, request);
         let client = &self.inner_client;
@@ -82,9 +72,7 @@ impl Client {
     }
 
     pub async fn get<T: DeserializeOwned>(
-        &self,
-        endpoint: API,
-        request: Option<String>,
+        &self, endpoint: API, request: Option<String>,
     ) -> Result<T> {
         let mut url: String = format!("{}{}", self.host, String::from(endpoint));
         if let Some(request_str) = request {
@@ -100,10 +88,7 @@ impl Client {
         self.handler(response).await // Updated
     }
 
-    pub async fn post<T: DeserializeOwned>(
-        &self,
-        endpoint: API,
-    ) -> Result<T> {
+    pub async fn post<T: DeserializeOwned>(&self, endpoint: API) -> Result<T> {
         let url: String = format!("{}{}", self.host, String::from(endpoint));
 
         let client = &self.inner_client;
@@ -116,11 +101,7 @@ impl Client {
         self.handler(response).await // Updated
     }
 
-    pub async fn put<T: DeserializeOwned>(
-        &self,
-        endpoint: API,
-        listen_key: &str,
-    ) -> Result<T> {
+    pub async fn put<T: DeserializeOwned>(&self, endpoint: API, listen_key: &str) -> Result<T> {
         let url: String = format!("{}{}", self.host, String::from(endpoint));
         let data: String = format!("listenKey={}", listen_key);
 
@@ -135,11 +116,7 @@ impl Client {
         self.handler(response).await // Updated
     }
 
-    pub async fn delete<T: DeserializeOwned>(
-        &self,
-        endpoint: API,
-        listen_key: &str,
-    ) -> Result<T> {
+    pub async fn delete<T: DeserializeOwned>(&self, endpoint: API, listen_key: &str) -> Result<T> {
         let url: String = format!("{}{}", self.host, String::from(endpoint));
         let data: String = format!("listenKey={}", listen_key);
 
@@ -155,11 +132,7 @@ impl Client {
     }
 
     // Request must be signed
-    fn sign_request(
-        &self,
-        endpoint: API,
-        request: Option<String>,
-    ) -> String {
+    fn sign_request(&self, endpoint: API, request: Option<String>) -> String {
         if let Some(request_str) = request {
             // Renamed to avoid conflict
             let mut signed_key =
@@ -184,10 +157,7 @@ impl Client {
         }
     }
 
-    fn build_headers(
-        &self,
-        content_type: bool,
-    ) -> Result<HeaderMap> {
+    fn build_headers(&self, content_type: bool) -> Result<HeaderMap> {
         let mut custom_headers = HeaderMap::new();
 
         custom_headers.insert(USER_AGENT, HeaderValue::from_static("binance-rs"));
@@ -205,10 +175,7 @@ impl Client {
         Ok(custom_headers)
     }
 
-    async fn handler<T: DeserializeOwned>(
-        &self,
-        response: Response,
-    ) -> Result<T> {
+    async fn handler<T: DeserializeOwned>(&self, response: Response) -> Result<T> {
         // Updated
         match response.status() {
             StatusCode::OK => Ok(response.json::<T>().await?), // Updated
