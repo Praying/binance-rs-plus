@@ -12,7 +12,7 @@
 一个非官方的 Rust 库，用于 [Binance API](https://github.com/binance/binance-spot-api-docs) (币安现货 API) 和 [Binance Futures API](https://binance-docs.github.io/apidocs/futures/en/#general-info) (币安合约 API)。
 
 [![Crates.io](https://img.shields.io/crates/v/binance-rs-plus.svg)](https://crates.io/crates/binance-rs-plus)
-[![Build Status](https://travis-ci.org/wisespace-io/binance-rs-plus.png?branch=master)](https://travis-ci.org/wisespace-io/binance-rs-plus)
+[![Build Status](https://travis-ci.org/Praying/binance-rs-plus.png?branch=main)](https://travis-ci.org/Praying/binance-rs-plus)
 [![CI](https://github.com/Praying/binance-rs-plus/workflows/Rust/badge.svg)](https://github.com/Praying/binance-rs-plus/actions?query=workflow%3ARust)
 [![MIT licensed](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE-MIT)
 [![Apache-2.0 licensed](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE-APACHE)
@@ -30,13 +30,13 @@
 
 ```toml
 [dependencies]
-binance-rs-plus = "0.1.1" # 或者 crates.io 上的最新版本
+binance-rs-plus = "0.1.2" # 或者 crates.io 上的最新版本
 # binance-rs-plus = { git = "https://github.com/Praying/binance-rs-plus" }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0"
 ```
 
-## Rust >= 1.84.0 (Edition 2024)
+## Rust >= 1.87.0 (Edition 2024)
 
 ```sh
 rustup update stable

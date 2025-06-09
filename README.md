@@ -15,7 +15,7 @@ Unofficial Rust Library for the [Binance API](https://github.com/binance/binance
 [![English](https://img.shields.io/badge/Language-English-blue?style=flat-square)](README.md)
 [![中文](https://img.shields.io/badge/语言-中文-red?style=flat-square)](README-CN.md)
 [![Crates.io](https://img.shields.io/crates/v/binance-rs-plus.svg)](https://crates.io/crates/binance-rs-plus)
-[![Build Status](https://travis-ci.org/wisespace-io/binance-rs-plus.png?branch=master)](https://travis-ci.org/wisespace-io/binance-rs-plus)
+[![Build Status](https://travis-ci.org/Praying/binance-rs-plus.png?branch=main)](https://travis-ci.org/Praying/binance-rs-plus)
 [![CI](https://github.com/Praying/binance-rs-plus/workflows/Rust/badge.svg)](https://github.com/Praying/binance-rs-plus/actions?query=workflow%3ARust)
 [![MIT licensed](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE-MIT)
 [![Apache-2.0 licensed](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE-APACHE)
@@ -34,14 +34,14 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-binance-rs-plus = "0.1.1" # Or the latest version from crates.io
+binance-rs-plus = "0.1.2" # Or the latest version from crates.io
 # For using the git version:
 # binance-rs-plus = { git = "https://github.com/Praying/binance-rs-plus" }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0"
 ```
 
-## Rust >= 1.84.0 (Edition 2024)
+## Rust >= 1.87.0 (Edition 2024)
 
 ```sh
 rustup update stable

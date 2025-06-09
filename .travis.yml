@@ -7,8 +7,29 @@ matrix:
         - rust: stable
 before_script:
     - rustup component add clippy
+
+deploy:
+    - provider: script
+      script: "echo 'Detected tag $TRAVIS_TAG, proceeding to deploy'"
+      skip_cleanup: true
+      on:
+          tags: true
+          branch: main
+
+    - provider: cargo
+      token: ${CARGO_REGISTRY_TOKEN}
+      on:
+          tags: true
+          branch: main
+          condition: "$TRAVIS_RUST_VERSION = stable"
+      edge: true
+      registry: crates-io
+      cleanup: false
+
 script:
+    - cargo build --release
     - cargo clippy -- -D warnings
+    - cargo fmt -- --check
 cache:
     apt: true
     directories:
