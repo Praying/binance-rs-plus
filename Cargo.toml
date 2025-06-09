@@ -3,6 +3,7 @@ name = "binance-rs-plus"
 version = "0.1.1"
 license = "MIT OR Apache-2.0"
 authors = ["codegpt<codegpt@gmail.com>"]
+rust-version = "1.87.0"
 edition = "2024"
 
 description = "Rust Library for the Binance API"
