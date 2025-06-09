@@ -109,14 +109,6 @@ enum FuturesEvents {
     UserDataStreamExpiredEvent(UserDataStreamExpiredEvent),
 }
 
-// Define the type for the user-provided handler
-type UserCallback<'a> = Box<
-    dyn FnMut(FuturesWebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>>
-        + Send
-        + Sync
-        + 'a,
->;
-
 // Define the type for the adapter handler passed to AsyncWebsocketClient
 type AdapterHandler<'a> = Box<
     dyn FnMut(FuturesEvents) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>>

@@ -82,14 +82,6 @@ enum Events {
     DepthOrderBookEvent(DepthOrderBookEvent),
 }
 
-// Define the type for the user-provided handler
-type UserCallback<'a> = Box<
-    dyn FnMut(WebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>>
-        + Send
-        + Sync
-        + 'a,
->;
-
 // Define the type for the adapter handler passed to AsyncWebsocketClient
 type AdapterHandler<'a> = Box<
     dyn FnMut(Events) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a,

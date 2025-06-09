@@ -1,16 +1,19 @@
-use std::error::Error as StdError; // Renamed to avoid conflict
-use std::fs::File;
+use std::error::Error as StdError;
 use csv::Writer;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc; // Added
-use tokio::sync::Mutex; // Added
+// Renamed to avoid conflict
+use std::fs::File;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
+// Added
+use tokio::sync::Mutex;
+// Added
 
-use binance_rs_plus::websockets::*;
+use anyhow::Result;
 use binance_rs_plus::model::DayTickerEvent;
-use anyhow::Result; // Added
-use std::pin::Pin; // Added
-use std::future::Future; // Added
-use binance_rs_plus::errors::Result as BinanceResult; // For handler return type
+use binance_rs_plus::websockets::*;
+// Added
+use binance_rs_plus::errors::Result as BinanceResult;
+// For handler return type
 
 #[tokio::main]
 async fn main() -> Result<()> {

@@ -4,11 +4,12 @@ use binance_rs_plus::api::*;
 use binance_rs_plus::userstream::*;
 use binance_rs_plus::websockets::*;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc; // Added
-use anyhow::Result; // Added
-use std::pin::Pin; // Added
-use std::future::Future; // Added
-use binance_rs_plus::errors::Result as BinanceResult; // For handler return type
+use std::sync::Arc;
+// Added
+use anyhow::Result;
+// Added
+use binance_rs_plus::errors::Result as BinanceResult;
+// For handler return type
 
 #[tokio::main]
 async fn main() -> Result<()> {

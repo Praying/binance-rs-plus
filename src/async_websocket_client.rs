@@ -42,10 +42,10 @@ where
         &self,
         wss_url: &str,
     ) -> Result<()> {
-        let url_obj = Url::parse(wss_url).map_err(|e| Error::UrlParser(e))?;
+        let url_obj = Url::parse(wss_url).map_err(Error::UrlParser)?;
         let (ws_stream, _response) = connect_async(url_obj.as_str()) // Convert Url to &str
             .await
-            .map_err(|e| Error::WebSocket(e))?;
+            .map_err(Error::WebSocket)?;
 
         let mut socket_guard = self.socket.lock().await;
         *socket_guard = Some(ws_stream);
@@ -55,7 +55,7 @@ where
     pub async fn disconnect(&self) -> Result<()> {
         let mut socket_guard = self.socket.lock().await;
         if let Some(stream) = socket_guard.as_mut() {
-            stream.close(None).await.map_err(|e| Error::WebSocket(e))?;
+            stream.close(None).await.map_err(Error::WebSocket)?;
             *socket_guard = None;
             Ok(())
         } else {
@@ -72,51 +72,48 @@ where
         // For now, assuming direct deserialization or a simple 'data' field check.
 
         // Attempt direct deserialization
-        match serde_json::from_str::<E>(&msg_text) {
-            Ok(event) => {
-                let mut handler_guard = self.handler.lock().await;
-                (handler_guard)(event).await?;
-                return Ok(());
-            }
-            Err(_) => {
-                // If direct deserialization fails, check for a common "data" wrapper
-                // This is a simplified example; real-world scenarios might be more complex.
-                if let Ok(value) = serde_json::from_str::<serde_json::Value>(&msg_text) {
-                    if let Some(data_val) = value.get("data") {
-                        match serde_json::from_value::<E>(data_val.clone()) {
-                            Ok(event) => {
-                                let mut handler_guard = self.handler.lock().await;
-                                (handler_guard)(event).await?;
-                                return Ok(());
-                            }
-                            Err(e_inner) => {
-                                return Err(Error::Json(e_inner));
-                            }
+        if let Ok(event) = serde_json::from_str::<E>(&msg_text) {
+            let mut handler_guard = self.handler.lock().await;
+            (handler_guard)(event).await?;
+            Ok(())
+        } else {
+            // If direct deserialization fails, check for a common "data" wrapper
+            // This is a simplified example; real-world scenarios might be more complex.
+            if let Ok(value) = serde_json::from_str::<serde_json::Value>(&msg_text) {
+                if let Some(data_val) = value.get("data") {
+                    match serde_json::from_value::<E>(data_val.clone()) {
+                        Ok(event) => {
+                            let mut handler_guard = self.handler.lock().await;
+                            (handler_guard)(event).await?;
+                            return Ok(());
+                        }
+                        Err(e_inner) => {
+                            return Err(Error::Json(e_inner));
                         }
                     }
-                    // If not a "data" wrapper, or if that also fails to parse as E
-                    if let Ok(stream_value) = serde_json::from_str::<serde_json::Value>(&msg_text) {
-                        if let Some(_stream_name) = stream_value.get("stream") {
-                            if let Some(data_val_stream) = stream_value.get("data") {
-                                match serde_json::from_value::<E>(data_val_stream.clone()) {
-                                    Ok(event) => {
-                                        let mut handler_guard = self.handler.lock().await;
-                                        (handler_guard)(event).await?;
-                                        return Ok(());
-                                    }
-                                    Err(e_inner_stream) => {
-                                        return Err(Error::Json(e_inner_stream));
-                                    }
+                }
+                // If not a "data" wrapper, or if that also fails to parse as E
+                if let Ok(stream_value) = serde_json::from_str::<serde_json::Value>(&msg_text) {
+                    if let Some(_stream_name) = stream_value.get("stream") {
+                        if let Some(data_val_stream) = stream_value.get("data") {
+                            match serde_json::from_value::<E>(data_val_stream.clone()) {
+                                Ok(event) => {
+                                    let mut handler_guard = self.handler.lock().await;
+                                    (handler_guard)(event).await?;
+                                    return Ok(());
+                                }
+                                Err(e_inner_stream) => {
+                                    return Err(Error::Json(e_inner_stream));
                                 }
                             }
                         }
                     }
                 }
-                // If all attempts fail, return original direct deserialization error
-                Err(Error::Json(
-                    serde_json::from_str::<E>(&msg_text).unwrap_err(),
-                ))
             }
+            // If all attempts fail, return original direct deserialization error
+            Err(Error::Json(
+                serde_json::from_str::<E>(&msg_text).unwrap_err(),
+            ))
         }
     }
 
@@ -148,7 +145,7 @@ where
                                 if let Some(s) = new_socket_guard.as_mut() {
                                     s.send(Message::Pong(payload))
                                         .await
-                                        .map_err(|e| Error::WebSocket(e))?;
+                                        .map_err(Error::WebSocket)?;
                                 }
                                 drop(new_socket_guard);
                             }
