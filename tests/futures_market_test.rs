@@ -9,7 +9,8 @@ mod tests {
     use mockito::{Server, Matcher};
 
     #[tokio::test] // Changed
-    async fn open_interest_statistics() { // async added
+    async fn open_interest_statistics() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_open_interest_statistics = server
             .mock("GET", "/futures/data/openInterestHist")
@@ -18,7 +19,8 @@ mod tests {
             // If it were a signed endpoint, the Matcher::Regex would need to include &timestamp=\\d+&signature=.*
             .match_query(Matcher::Regex("limit=10&period=5m&symbol=BTCUSDT".into()))
             .with_body_from_file("tests/mocks/futures/market/open_interest_statistics.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_futures_rest_api_endpoint(server.url());
         let market: FuturesMarket = Binance::new_with_config(None, None, &config);

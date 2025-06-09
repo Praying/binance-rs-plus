@@ -47,7 +47,10 @@ async fn user_stream() -> Result<()> {
             }
         }
         Err(e) => {
-            eprintln!("Not able to start an User Stream (Check your API_KEY): {:?}", e);
+            eprintln!(
+                "Not able to start an User Stream (Check your API_KEY): {:?}",
+                e
+            );
         }
     }
     Ok(())
@@ -100,15 +103,17 @@ async fn user_stream_websocket() -> Result<()> {
                 println!("Signaling user stream WebSocket to stop...");
                 keep_running_clone.store(false, Ordering::Relaxed);
             });
-            
+
             if let Err(e) = web_socket.event_loop(keep_running.clone()).await {
-                 if e.to_string().contains("WebSocket closed by server") || e.to_string().contains("WebSocket stream ended") {
+                if e.to_string().contains("WebSocket closed by server")
+                    || e.to_string().contains("WebSocket stream ended")
+                {
                     println!("User stream WebSocket closed as expected or stream ended.");
                 } else {
                     eprintln!("Error in user stream WebSocket event loop: {:?}", e);
                 }
             }
-            
+
             println!("Closing user stream channel with Binance...");
             user_stream.close(&listen_key).await?;
             println!("Disconnecting user stream WebSocket...");
@@ -116,7 +121,10 @@ async fn user_stream_websocket() -> Result<()> {
             println!("User stream closed and disconnected.");
         }
         Err(e) => {
-            eprintln!("Not able to start an User Stream (Check your API_KEY): {:?}", e);
+            eprintln!(
+                "Not able to start an User Stream (Check your API_KEY): {:?}",
+                e
+            );
         }
     }
     Ok(())
@@ -148,10 +156,10 @@ async fn market_websocket() -> Result<()> {
                         order_book.last_update_id, order_book.bids, order_book.asks
                     );
                 }
-                 WebsocketEvent::AggrTrades(agg_trade_event) => {
+                WebsocketEvent::AggrTrades(agg_trade_event) => {
                     println!("Aggregated Trade: {:?}", agg_trade_event);
                     // Example: Stop after one event for this type of stream
-                    keep_running_for_callback.store(false, Ordering::Relaxed); 
+                    keep_running_for_callback.store(false, Ordering::Relaxed);
                 }
                 _ => { /* println!("Other market event: {:?}", event) */ }
             };
@@ -163,10 +171,18 @@ async fn market_websocket() -> Result<()> {
     println!("Connected to {} stream.", agg_trade_stream_name);
 
     if let Err(e) = web_socket.event_loop(keep_running_for_event_loop).await {
-        if e.to_string().contains("WebSocket closed by server") || e.to_string().contains("WebSocket stream ended") {
-            println!("Market WebSocket {} closed as expected or stream ended.", agg_trade_stream_name);
+        if e.to_string().contains("WebSocket closed by server")
+            || e.to_string().contains("WebSocket stream ended")
+        {
+            println!(
+                "Market WebSocket {} closed as expected or stream ended.",
+                agg_trade_stream_name
+            );
         } else {
-            eprintln!("Error in market WebSocket event loop ({}): {:?}", agg_trade_stream_name, e);
+            eprintln!(
+                "Error in market WebSocket event loop ({}): {:?}",
+                agg_trade_stream_name, e
+            );
         }
     }
     web_socket.disconnect().await?;
@@ -182,8 +198,12 @@ async fn all_trades_websocket() -> Result<()> {
         let keep_running_for_callback = Arc::clone(&keep_running);
         Box::pin(async move {
             if let WebsocketEvent::DayTickerAll(ticker_events) = event {
-                println!("Received a batch of {} DayTickerAll events.", ticker_events.len());
-                for tick_event in ticker_events.iter().take(2) { // Print first 2 for brevity
+                println!(
+                    "Received a batch of {} DayTickerAll events.",
+                    ticker_events.len()
+                );
+                for tick_event in ticker_events.iter().take(2) {
+                    // Print first 2 for brevity
                     println!(
                         "Symbol: {}, price: {}, qty: {}",
                         tick_event.symbol, tick_event.best_bid, tick_event.best_bid_qty
@@ -199,10 +219,18 @@ async fn all_trades_websocket() -> Result<()> {
     web_socket.connect(&all_tickers_stream).await?;
     println!("Connected to {} stream.", all_tickers_stream);
     if let Err(e) = web_socket.event_loop(keep_running_for_event_loop).await {
-         if e.to_string().contains("WebSocket closed by server") || e.to_string().contains("WebSocket stream ended") {
-            println!("All trades WebSocket ({}) closed as expected or stream ended.", all_tickers_stream);
+        if e.to_string().contains("WebSocket closed by server")
+            || e.to_string().contains("WebSocket stream ended")
+        {
+            println!(
+                "All trades WebSocket ({}) closed as expected or stream ended.",
+                all_tickers_stream
+            );
         } else {
-            eprintln!("Error in all_trades_websocket event loop ({}): {:?}", all_tickers_stream, e);
+            eprintln!(
+                "Error in all_trades_websocket event loop ({}): {:?}",
+                all_tickers_stream, e
+            );
         }
     }
     web_socket.disconnect().await?;
@@ -232,10 +260,18 @@ async fn kline_websocket() -> Result<()> {
     web_socket.connect(&kline_stream).await?;
     println!("Connected to {} stream.", kline_stream);
     if let Err(e) = web_socket.event_loop(keep_running_for_event_loop).await {
-        if e.to_string().contains("WebSocket closed by server") || e.to_string().contains("WebSocket stream ended") {
-            println!("Kline WebSocket ({}) closed as expected or stream ended.", kline_stream);
+        if e.to_string().contains("WebSocket closed by server")
+            || e.to_string().contains("WebSocket stream ended")
+        {
+            println!(
+                "Kline WebSocket ({}) closed as expected or stream ended.",
+                kline_stream
+            );
         } else {
-           eprintln!("Error in kline_websocket event loop ({}): {:?}", kline_stream, e);
+            eprintln!(
+                "Error in kline_websocket event loop ({}): {:?}",
+                kline_stream, e
+            );
         }
     }
     web_socket.disconnect().await?;
@@ -254,8 +290,12 @@ async fn last_price_for_one_symbol() -> Result<()> {
         Box::pin(async move {
             if let WebsocketEvent::DayTicker(ticker_event) = event {
                 // btcusdt_price = ticker_event.average_price.parse().unwrap_or_default();
-                let current_close_price: f32 = ticker_event.current_close.parse().unwrap_or_default();
-                println!("BTCUSDT Ticker - Avg Price: {}, Current Close: {}", ticker_event.average_price, current_close_price);
+                let current_close_price: f32 =
+                    ticker_event.current_close.parse().unwrap_or_default();
+                println!(
+                    "BTCUSDT Ticker - Avg Price: {}, Current Close: {}",
+                    ticker_event.average_price, current_close_price
+                );
 
                 // Example: Stop if price reaches a certain point (for testing)
                 // if current_close_price > 20000.0 { // Adjust threshold as needed
@@ -272,10 +312,18 @@ async fn last_price_for_one_symbol() -> Result<()> {
     web_socket.connect(&ticker_stream).await?;
     println!("Connected to {} stream.", ticker_stream);
     if let Err(e) = web_socket.event_loop(keep_running_for_event_loop).await {
-        if e.to_string().contains("WebSocket closed by server") || e.to_string().contains("WebSocket stream ended") {
-            println!("Ticker WebSocket ({}) closed as expected or stream ended.", ticker_stream);
+        if e.to_string().contains("WebSocket closed by server")
+            || e.to_string().contains("WebSocket stream ended")
+        {
+            println!(
+                "Ticker WebSocket ({}) closed as expected or stream ended.",
+                ticker_stream
+            );
         } else {
-            eprintln!("Error in last_price_for_one_symbol event loop ({}): {:?}", ticker_stream, e);
+            eprintln!(
+                "Error in last_price_for_one_symbol event loop ({}): {:?}",
+                ticker_stream, e
+            );
         }
     }
     web_socket.disconnect().await?;
@@ -284,17 +332,18 @@ async fn last_price_for_one_symbol() -> Result<()> {
 }
 
 async fn multiple_streams() -> Result<()> {
-    let endpoints =
-        ["ethbtc@depth@100ms", "bnbeth@depth@100ms"].map(String::from).to_vec(); // Ensure Vec<String>
+    let endpoints = ["ethbtc@depth@100ms", "bnbeth@depth@100ms"]
+        .map(String::from)
+        .to_vec(); // Ensure Vec<String>
 
     let keep_running = Arc::new(AtomicBool::new(true));
     let keep_running_for_event_loop = Arc::clone(&keep_running);
     let mut web_socket: WebSockets<'_> = WebSockets::new(move |event: WebsocketEvent| {
         let keep_running_for_callback = Arc::clone(&keep_running);
-         Box::pin(async move {
+        Box::pin(async move {
             if let WebsocketEvent::DepthOrderBook(depth_order_book) = event {
                 println!("Multi-stream Depth: {:?}", depth_order_book.symbol);
-                 // Stop after a few events for brevity in example
+                // Stop after a few events for brevity in example
                 static mut COUNT: u8 = 0;
                 unsafe {
                     COUNT += 1;
@@ -310,7 +359,9 @@ async fn multiple_streams() -> Result<()> {
     web_socket.connect_multiple_streams(&endpoints).await?;
     println!("Connected to multiple streams: {:?}", endpoints);
     if let Err(e) = web_socket.event_loop(keep_running_for_event_loop).await {
-        if e.to_string().contains("WebSocket closed by server") || e.to_string().contains("WebSocket stream ended") {
+        if e.to_string().contains("WebSocket closed by server")
+            || e.to_string().contains("WebSocket stream ended")
+        {
             println!("Multiple streams WebSocket closed as expected or stream ended.");
         } else {
             eprintln!("Error in multiple_streams event loop: {:?}", e);

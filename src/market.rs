@@ -19,7 +19,11 @@ pub struct Market {
 // Market Data endpoints
 impl Market {
     // Order book at the default depth of 100
-    pub async fn get_depth<S>(&self, symbol: S) -> Result<OrderBook> // async added
+    pub async fn get_depth<S>(
+        &self,
+        symbol: S,
+    ) -> Result<OrderBook>
+    // async added
     where
         S: Into<String>,
     {
@@ -31,7 +35,12 @@ impl Market {
 
     // Order book at a custom depth. Currently supported values
     // are 5, 10, 20, 50, 100, 500, 1000 and 5000
-    pub async fn get_custom_depth<S>(&self, symbol: S, depth: u64) -> Result<OrderBook> // async added
+    pub async fn get_custom_depth<S>(
+        &self,
+        symbol: S,
+        depth: u64,
+    ) -> Result<OrderBook>
+    // async added
     where
         S: Into<String>,
     {
@@ -43,12 +52,17 @@ impl Market {
     }
 
     // Latest price for ALL symbols.
-    pub async fn get_all_prices(&self) -> Result<Prices> { // async added
+    pub async fn get_all_prices(&self) -> Result<Prices> {
+        // async added
         self.client.get(API::Spot(Spot::Price), None).await // .await added
     }
 
     // Latest price for ONE symbol.
-    pub async fn get_price<S>(&self, symbol: S) -> Result<SymbolPrice> // async added
+    pub async fn get_price<S>(
+        &self,
+        symbol: S,
+    ) -> Result<SymbolPrice>
+    // async added
     where
         S: Into<String>,
     {
@@ -59,46 +73,66 @@ impl Market {
     }
 
     // Average price for ONE symbol.
-    pub async fn get_average_price<S>(&self, symbol: S) -> Result<AveragePrice> // async added
+    pub async fn get_average_price<S>(
+        &self,
+        symbol: S,
+    ) -> Result<AveragePrice>
+    // async added
     where
         S: Into<String>,
     {
         let mut parameters: BTreeMap<String, String> = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
         let request = build_request(parameters);
-        self.client.get(API::Spot(Spot::AvgPrice), Some(request)).await // .await added
+        self.client
+            .get(API::Spot(Spot::AvgPrice), Some(request))
+            .await // .await added
     }
 
     // Symbols order book ticker
     // -> Best price/qty on the order book for ALL symbols.
-    pub async fn get_all_book_tickers(&self) -> Result<BookTickers> { // async added
+    pub async fn get_all_book_tickers(&self) -> Result<BookTickers> {
+        // async added
         self.client.get(API::Spot(Spot::BookTicker), None).await // .await added
     }
 
     // -> Best price/qty on the order book for ONE symbol
-    pub async fn get_book_ticker<S>(&self, symbol: S) -> Result<Tickers> // async added
+    pub async fn get_book_ticker<S>(
+        &self,
+        symbol: S,
+    ) -> Result<Tickers>
+    // async added
     where
         S: Into<String>,
     {
         let mut parameters: BTreeMap<String, String> = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
         let request = build_request(parameters);
-        self.client.get(API::Spot(Spot::BookTicker), Some(request)).await // .await added
+        self.client
+            .get(API::Spot(Spot::BookTicker), Some(request))
+            .await // .await added
     }
 
     // 24hr ticker price change statistics
-    pub async fn get_24h_price_stats<S>(&self, symbol: S) -> Result<PriceStats> // async added
+    pub async fn get_24h_price_stats<S>(
+        &self,
+        symbol: S,
+    ) -> Result<PriceStats>
+    // async added
     where
         S: Into<String>,
     {
         let mut parameters: BTreeMap<String, String> = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
         let request = build_request(parameters);
-        self.client.get(API::Spot(Spot::Ticker24hr), Some(request)).await // .await added
+        self.client
+            .get(API::Spot(Spot::Ticker24hr), Some(request))
+            .await // .await added
     }
 
     // 24hr ticker price change statistics for all symbols
-    pub async fn get_all_24h_price_stats(&self) -> Result<Vec<PriceStats>> { // async added
+    pub async fn get_all_24h_price_stats(&self) -> Result<Vec<PriceStats>> {
+        // async added
         self.client.get(API::Spot(Spot::Ticker24hr), None).await // .await added
     }
 
@@ -106,8 +140,14 @@ impl Market {
     ///
     /// If you provide start_time, you also need to provide end_time.
     /// If from_id, start_time and end_time are omitted, the most recent trades are fetched.
-    pub async fn get_agg_trades<S1, S2, S3, S4, S5>( // async added
-        &self, symbol: S1, from_id: S2, start_time: S3, end_time: S4, limit: S5,
+    pub async fn get_agg_trades<S1, S2, S3, S4, S5>(
+        // async added
+        &self,
+        symbol: S1,
+        from_id: S2,
+        start_time: S3,
+        end_time: S4,
+        limit: S5,
     ) -> Result<Vec<AggTrade>>
     where
         S1: Into<String>,
@@ -136,13 +176,21 @@ impl Market {
 
         let request = build_request(parameters);
 
-        self.client.get(API::Spot(Spot::AggTrades), Some(request)).await // .await added
+        self.client
+            .get(API::Spot(Spot::AggTrades), Some(request))
+            .await // .await added
     }
 
     // Returns up to 'limit' klines for given symbol and interval ("1m", "5m", ...)
     // https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md#klinecandlestick-data
-    pub async fn get_klines<S1, S2, S3, S4, S5>( // async added
-        &self, symbol: S1, interval: S2, limit: S3, start_time: S4, end_time: S5,
+    pub async fn get_klines<S1, S2, S3, S4, S5>(
+        // async added
+        &self,
+        symbol: S1,
+        interval: S2,
+        limit: S3,
+        start_time: S4,
+        end_time: S5,
     ) -> Result<KlineSummaries>
     where
         S1: Into<String>,
@@ -168,7 +216,10 @@ impl Market {
         }
 
         let request = build_request(parameters);
-        let data: Vec<Vec<Value>> = self.client.get(API::Spot(Spot::Klines), Some(request)).await?; // .await? added
+        let data: Vec<Vec<Value>> = self
+            .client
+            .get(API::Spot(Spot::Klines), Some(request))
+            .await?; // .await? added
 
         let klines = KlineSummaries::AllKlineSummaries(
             data.iter()

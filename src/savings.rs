@@ -14,7 +14,8 @@ pub struct Savings {
 
 impl Savings {
     /// Get all coins available for deposit and withdrawal
-    pub async fn get_all_coins(&self) -> Result<Vec<CoinInfo>> { // async added
+    pub async fn get_all_coins(&self) -> Result<Vec<CoinInfo>> {
+        // async added
         let request = build_signed_request(BTreeMap::new(), self.recv_window)?;
         self.client
             .get_signed(API::Savings(Sapi::AllCoins), Some(request))
@@ -22,9 +23,14 @@ impl Savings {
     }
 
     /// Fetch details of assets supported on Binance.
-    pub async fn asset_detail(&self, asset: Option<String>) -> Result<BTreeMap<String, AssetDetail>> { // async added
+    pub async fn asset_detail(
+        &self,
+        asset: Option<String>,
+    ) -> Result<BTreeMap<String, AssetDetail>> {
+        // async added
         let mut parameters = BTreeMap::new();
-        if let Some(asset_str) = asset { // Renamed to avoid conflict
+        if let Some(asset_str) = asset {
+            // Renamed to avoid conflict
             parameters.insert("asset".into(), asset_str);
         }
         let request = build_signed_request(parameters, self.recv_window)?;
@@ -37,13 +43,19 @@ impl Savings {
     ///
     /// You can get the available networks using `get_all_coins`.
     /// If no network is specified, the address for the default network is returned.
-    pub async fn deposit_address<S>(&self, coin: S, network: Option<String>) -> Result<DepositAddress> // async added
+    pub async fn deposit_address<S>(
+        &self,
+        coin: S,
+        network: Option<String>,
+    ) -> Result<DepositAddress>
+    // async added
     where
         S: Into<String>,
     {
         let mut parameters = BTreeMap::new();
         parameters.insert("coin".into(), coin.into());
-        if let Some(network_str) = network { // Renamed to avoid conflict
+        if let Some(network_str) = network {
+            // Renamed to avoid conflict
             parameters.insert("network".into(), network_str);
         }
         let request = build_signed_request(parameters, self.recv_window)?;
@@ -52,8 +64,12 @@ impl Savings {
             .await // .await added
     }
 
-    pub async fn transfer_funds<S>( // async added
-        &self, asset: S, amount: f64, transfer_type: SpotFuturesTransferType,
+    pub async fn transfer_funds<S>(
+        // async added
+        &self,
+        asset: S,
+        amount: f64,
+        transfer_type: SpotFuturesTransferType,
     ) -> Result<TransactionId>
     where
         S: Into<String>,

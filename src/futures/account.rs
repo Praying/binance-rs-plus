@@ -48,7 +48,10 @@ pub enum PositionSide {
 }
 
 impl Display for PositionSide {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         match self {
             Self::Both => write!(f, "BOTH"),
             Self::Long => write!(f, "LONG"),
@@ -69,7 +72,10 @@ pub enum OrderType {
 }
 
 impl Display for OrderType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         match self {
             Self::Limit => write!(f, "LIMIT"),
             Self::Market => write!(f, "MARKET"),
@@ -89,7 +95,10 @@ pub enum WorkingType {
 }
 
 impl Display for WorkingType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         match self {
             Self::MarkPrice => write!(f, "MARK_PRICE"),
             Self::ContractPrice => write!(f, "CONTRACT_PRICE"),
@@ -107,7 +116,10 @@ pub enum TimeInForce {
 }
 
 impl Display for TimeInForce {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         match self {
             Self::GTC => write!(f, "GTC"),
             Self::IOC => write!(f, "IOC"),
@@ -131,7 +143,7 @@ struct OrderRequestBuilder {
     pub stop_price: Option<f64>,
     pub close_position: Option<bool>, // if true, all existing long/short positions will be closed
     pub activation_price: Option<f64>, // Used with TRAILING_STOP_MARKET orders
-    pub callback_rate: Option<f64>,    // Used with TRAILING_STOP_MARKET orders
+    pub callback_rate: Option<f64>,   // Used with TRAILING_STOP_MARKET orders
     pub working_type: Option<WorkingType>,
     pub price_protect: Option<bool>, // For STOP_MARKET and TAKE_PROFIT_MARKET orders
 }
@@ -190,14 +202,20 @@ pub enum IncomeType {
 }
 
 impl Display for IncomeType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         write!(f, "{:?}", self) // Use Debug representation for string conversion
     }
 }
 
 impl FuturesAccount {
     // Helper to build BTreeMap for an order
-    fn build_order_params(&self, order_builder: OrderRequestBuilder) -> BTreeMap<String, String> {
+    fn build_order_params(
+        &self,
+        order_builder: OrderRequestBuilder,
+    ) -> BTreeMap<String, String> {
         let mut parameters = BTreeMap::new();
         parameters.insert("symbol".into(), order_builder.symbol);
         parameters.insert("side".into(), order_builder.side.to_string());
@@ -243,7 +261,10 @@ impl FuturesAccount {
     }
 
     pub async fn limit_buy(
-        &self, symbol: impl Into<String>, qty: impl Into<f64>, price: f64,
+        &self,
+        symbol: impl Into<String>,
+        qty: impl Into<f64>,
+        price: f64,
         time_in_force: TimeInForce,
     ) -> Result<Transaction> {
         let builder = OrderRequestBuilder {
@@ -271,7 +292,10 @@ impl FuturesAccount {
     }
 
     pub async fn limit_sell(
-        &self, symbol: impl Into<String>, qty: impl Into<f64>, price: f64,
+        &self,
+        symbol: impl Into<String>,
+        qty: impl Into<f64>,
+        price: f64,
         time_in_force: TimeInForce,
     ) -> Result<Transaction> {
         let builder = OrderRequestBuilder {
@@ -298,7 +322,11 @@ impl FuturesAccount {
             .await
     }
 
-    pub async fn market_buy<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
+    pub async fn market_buy<S, F>(
+        &self,
+        symbol: S,
+        qty: F,
+    ) -> Result<Transaction>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -327,7 +355,11 @@ impl FuturesAccount {
             .await
     }
 
-    pub async fn market_sell<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
+    pub async fn market_sell<S, F>(
+        &self,
+        symbol: S,
+        qty: F,
+    ) -> Result<Transaction>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -356,7 +388,11 @@ impl FuturesAccount {
             .await
     }
 
-    pub async fn cancel_order<S>(&self, symbol: S, order_id: u64) -> Result<CanceledOrder>
+    pub async fn cancel_order<S>(
+        &self,
+        symbol: S,
+        order_id: u64,
+    ) -> Result<CanceledOrder>
     where
         S: Into<String>,
     {
@@ -371,7 +407,9 @@ impl FuturesAccount {
     }
 
     pub async fn cancel_order_with_client_id<S>(
-        &self, symbol: S, orig_client_order_id: String,
+        &self,
+        symbol: S,
+        orig_client_order_id: String,
     ) -> Result<CanceledOrder>
     where
         S: Into<String>,
@@ -386,7 +424,11 @@ impl FuturesAccount {
             .await
     }
 
-    pub async fn stop_market_close_buy<S, F>(&self, symbol: S, stop_price: F) -> Result<Transaction>
+    pub async fn stop_market_close_buy<S, F>(
+        &self,
+        symbol: S,
+        stop_price: F,
+    ) -> Result<Transaction>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -415,7 +457,11 @@ impl FuturesAccount {
             .await
     }
 
-    pub async fn stop_market_close_sell<S, F>(&self, symbol: S, stop_price: F) -> Result<Transaction>
+    pub async fn stop_market_close_sell<S, F>(
+        &self,
+        symbol: S,
+        stop_price: F,
+    ) -> Result<Transaction>
     where
         S: Into<String>,
         F: Into<f64>,
@@ -444,7 +490,10 @@ impl FuturesAccount {
             .await
     }
 
-    pub async fn custom_order(&self, order_request: CustomOrderRequest) -> Result<Transaction> {
+    pub async fn custom_order(
+        &self,
+        order_request: CustomOrderRequest,
+    ) -> Result<Transaction> {
         let builder = OrderRequestBuilder {
             symbol: order_request.symbol,
             side: order_request.side,
@@ -470,13 +519,21 @@ impl FuturesAccount {
     }
 
     pub async fn custom_batch_orders(
-        &self, _order_requests: Vec<CustomOrderRequest>,
+        &self,
+        _order_requests: Vec<CustomOrderRequest>,
     ) -> Result<Vec<Transaction>> {
-        Err(Error::Custom("Batch order functionality not yet fully implemented.".to_string()))
+        Err(Error::Custom(
+            "Batch order functionality not yet fully implemented.".to_string(),
+        ))
     }
 
     pub async fn get_all_orders<S, F, N>(
-        &self, symbol: S, order_id: F, start_time: F, end_time: F, limit: N,
+        &self,
+        symbol: S,
+        order_id: F,
+        start_time: F,
+        end_time: F,
+        limit: N,
     ) -> Result<Vec<FuturesOrder>>
     where
         S: Into<String>,
@@ -505,7 +562,12 @@ impl FuturesAccount {
     }
 
     pub async fn get_user_trades<S, F, N>(
-        &self, symbol: S, from_id: F, start_time: F, end_time: F, limit: N,
+        &self,
+        symbol: S,
+        from_id: F,
+        start_time: F,
+        end_time: F,
+        limit: N,
     ) -> Result<Vec<TradeHistory>>
     where
         S: Into<String>,
@@ -528,89 +590,150 @@ impl FuturesAccount {
         }
 
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.get_signed(API::Futures(Futures::UserTrades), Some(request)).await
+        self.client
+            .get_signed(API::Futures(Futures::UserTrades), Some(request))
+            .await
     }
 
-    pub async fn position_information<S>(&self, symbol: S) -> Result<Vec<PositionRisk>>
-    where S: Into<String>,
+    pub async fn position_information<S>(
+        &self,
+        symbol: S,
+    ) -> Result<Vec<PositionRisk>>
+    where
+        S: Into<String>,
     {
         let mut parameters = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.get_signed(API::Futures(Futures::PositionRisk), Some(request)).await
+        self.client
+            .get_signed(API::Futures(Futures::PositionRisk), Some(request))
+            .await
     }
 
     pub async fn account_information(&self) -> Result<AccountInformation> {
         let request = build_signed_request(BTreeMap::new(), self.recv_window)?;
-        self.client.get_signed(API::Futures(Futures::Account), Some(request)).await
+        self.client
+            .get_signed(API::Futures(Futures::Account), Some(request))
+            .await
     }
 
     pub async fn account_balance(&self) -> Result<Vec<AccountBalance>> {
         let request = build_signed_request(BTreeMap::new(), self.recv_window)?;
-        self.client.get_signed(API::Futures(Futures::Balance), Some(request)).await
+        self.client
+            .get_signed(API::Futures(Futures::Balance), Some(request))
+            .await
     }
 
-    pub async fn change_initial_leverage<S>(&self, symbol: S, leverage: u8) -> Result<ChangeLeverageResponse>
-    where S: Into<String>,
+    pub async fn change_initial_leverage<S>(
+        &self,
+        symbol: S,
+        leverage: u8,
+    ) -> Result<ChangeLeverageResponse>
+    where
+        S: Into<String>,
     {
         let mut parameters = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
         parameters.insert("leverage".into(), leverage.to_string());
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.post_signed(API::Futures(Futures::ChangeInitialLeverage), request).await
+        self.client
+            .post_signed(API::Futures(Futures::ChangeInitialLeverage), request)
+            .await
     }
 
-    pub async fn change_margin_type<S>(&self, symbol: S, isolated: bool) -> Result<()>
-    where S: Into<String>,
+    pub async fn change_margin_type<S>(
+        &self,
+        symbol: S,
+        isolated: bool,
+    ) -> Result<()>
+    where
+        S: Into<String>,
     {
         let mut parameters = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
-        parameters.insert("marginType".into(), if isolated { "ISOLATED".to_string() } else { "CROSSED".to_string() });
+        parameters.insert(
+            "marginType".into(),
+            if isolated {
+                "ISOLATED".to_string()
+            } else {
+                "CROSSED".to_string()
+            },
+        );
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.post_signed::<Empty>(API::Futures(Futures::MarginType), request).await?;
+        self.client
+            .post_signed::<Empty>(API::Futures(Futures::MarginType), request)
+            .await?;
         Ok(())
     }
 
-    pub async fn change_position_margin<S>(&self, symbol: S, amount: f64, margin_type: u8) -> Result<()>
-    where S: Into<String>,
+    pub async fn change_position_margin<S>(
+        &self,
+        symbol: S,
+        amount: f64,
+        margin_type: u8,
+    ) -> Result<()>
+    where
+        S: Into<String>,
     {
         let mut parameters = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
         parameters.insert("amount".into(), amount.to_string());
         parameters.insert("type".into(), margin_type.to_string());
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.post_signed::<Empty>(API::Futures(Futures::PositionMargin), request).await?;
+        self.client
+            .post_signed::<Empty>(API::Futures(Futures::PositionMargin), request)
+            .await?;
         Ok(())
     }
 
-    pub async fn change_position_mode(&self, dual_side_position: bool) -> Result<()> {
+    pub async fn change_position_mode(
+        &self,
+        dual_side_position: bool,
+    ) -> Result<()> {
         let mut parameters = BTreeMap::new();
         parameters.insert("dualSidePosition".into(), dual_side_position.to_string());
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.post_signed::<Empty>(API::Futures(Futures::PositionSide), request).await?;
+        self.client
+            .post_signed::<Empty>(API::Futures(Futures::PositionSide), request)
+            .await?;
         Ok(())
     }
 
-    pub async fn cancel_all_open_orders<S>(&self, symbol: S) -> Result<()>
-    where S: Into<String>,
+    pub async fn cancel_all_open_orders<S>(
+        &self,
+        symbol: S,
+    ) -> Result<()>
+    where
+        S: Into<String>,
     {
         let mut parameters = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.delete_signed::<Empty>(API::Futures(Futures::AllOpenOrders), Some(request)).await?;
+        self.client
+            .delete_signed::<Empty>(API::Futures(Futures::AllOpenOrders), Some(request))
+            .await?;
         Ok(())
     }
 
-    pub async fn get_all_open_orders<S>(&self, symbol: S) -> Result<Vec<FuturesOrder>>
-    where S: Into<String>,
+    pub async fn get_all_open_orders<S>(
+        &self,
+        symbol: S,
+    ) -> Result<Vec<FuturesOrder>>
+    where
+        S: Into<String>,
     {
         let mut parameters = BTreeMap::new();
         parameters.insert("symbol".into(), symbol.into());
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.get_signed(API::Futures(Futures::OpenOrders), Some(request)).await
+        self.client
+            .get_signed(API::Futures(Futures::OpenOrders), Some(request))
+            .await
     }
-    
-    pub async fn get_income(&self, income_request: IncomeRequest) -> Result<Vec<Income>> {
+
+    pub async fn get_income(
+        &self,
+        income_request: IncomeRequest,
+    ) -> Result<Vec<Income>> {
         let mut parameters = BTreeMap::new();
         if let Some(symbol) = income_request.symbol {
             parameters.insert("symbol".into(), symbol);
@@ -628,6 +751,8 @@ impl FuturesAccount {
             parameters.insert("limit".into(), limit.to_string());
         }
         let request = build_signed_request(parameters, self.recv_window)?;
-        self.client.get_signed(API::Futures(Futures::Income), Some(request)).await
+        self.client
+            .get_signed(API::Futures(Futures::Income), Some(request))
+            .await
     }
 }

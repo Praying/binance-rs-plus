@@ -55,18 +55,21 @@ async fn market_data() -> Result<()> {
             } else {
                 println!("No trades found for BTCUSDT futures.");
             }
-        },
+        }
         Err(e) => println!("Error getting futures trades: {:?}", e),
     }
 
-    match market.get_agg_trades("btcusdt", None, None, None, None).await {
+    match market
+        .get_agg_trades("btcusdt", None, None, None, None)
+        .await
+    {
         Ok(AggTrades::AllAggTrades(answer)) => {
-             if let Some(agg_trade) = answer.first() {
+            if let Some(agg_trade) = answer.first() {
                 println!("Futures First aggregated trade: {:?}", agg_trade);
             } else {
                 println!("No aggregated trades found for BTCUSDT futures.");
             }
-        },
+        }
         Err(e) => println!("Error getting futures agg_trades: {:?}", e),
     }
 
@@ -77,7 +80,7 @@ async fn market_data() -> Result<()> {
             } else {
                 println!("No klines found for BTCUSDT futures.");
             }
-        },
+        }
         Err(e) => println!("Error getting futures klines: {:?}", e),
     }
 
@@ -98,7 +101,7 @@ async fn market_data() -> Result<()> {
             } else {
                 println!("No book tickers found for futures.");
             }
-        },
+        }
         Err(e) => println!("Error getting all futures book tickers: {:?}", e),
     }
 
@@ -114,7 +117,7 @@ async fn market_data() -> Result<()> {
             } else {
                 println!("No mark prices found for futures.");
             }
-        },
+        }
         Err(e) => println!("Error getting futures mark prices: {:?}", e),
     }
 

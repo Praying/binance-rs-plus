@@ -15,13 +15,16 @@ pub fn build_request(parameters: BTreeMap<String, String>) -> String {
 }
 
 pub fn build_signed_request(
-    parameters: BTreeMap<String, String>, recv_window: u64,
+    parameters: BTreeMap<String, String>,
+    recv_window: u64,
 ) -> Result<String> {
     build_signed_request_custom(parameters, recv_window, SystemTime::now())
 }
 
 pub fn build_signed_request_custom(
-    mut parameters: BTreeMap<String, String>, recv_window: u64, start: SystemTime,
+    mut parameters: BTreeMap<String, String>,
+    recv_window: u64,
+    start: SystemTime,
 ) -> Result<String> {
     if recv_window > 0 {
         parameters.insert("recvWindow".into(), recv_window.to_string());
@@ -47,7 +50,10 @@ fn get_timestamp(start: SystemTime) -> Result<u64> {
 }
 
 pub fn is_start_time_valid(start_time: &u64) -> bool {
-    let current_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+    let current_time = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
 
     if start_time > &current_time {
         false

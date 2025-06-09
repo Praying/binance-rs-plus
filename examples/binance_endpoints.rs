@@ -213,9 +213,13 @@ async fn market_data() -> Result<()> {
     }
 
     // 10 latest (aggregated) trades
-    match market.get_agg_trades("BNBETH", None, None, None, Some(10)).await {
+    match market
+        .get_agg_trades("BNBETH", None, None, None, Some(10))
+        .await
+    {
         Ok(trades) => {
-            if let Some(trade) = trades.first() { // Check if trades is not empty
+            if let Some(trade) = trades.first() {
+                // Check if trades is not empty
                 println!(
                     "{} BNB Qty: {}, Price: {}",
                     if trade.maker { "SELL" } else { "BUY" },
@@ -234,7 +238,8 @@ async fn market_data() -> Result<()> {
         Ok(klines) => {
             match klines {
                 binance_rs_plus::model::KlineSummaries::AllKlineSummaries(klines_vec) => {
-                    if let Some(kline_summary) = klines_vec.first() { // Check if klines_vec is not empty
+                    if let Some(kline_summary) = klines_vec.first() {
+                        // Check if klines_vec is not empty
                         // kline_summary is already a KlineSummary, no need to clone if just reading
                         println!(
                             "Open: {}, High: {}, Low: {}",

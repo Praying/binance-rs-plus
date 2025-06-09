@@ -1,6 +1,8 @@
 use crate::errors::{Error, Result};
 use futures_util::{StreamExt, SinkExt};
-use tokio_tungstenite::{connect_async, tungstenite::protocol::Message, MaybeTlsStream, WebSocketStream};
+use tokio_tungstenite::{
+    connect_async, tungstenite::protocol::Message, MaybeTlsStream, WebSocketStream,
+};
 use tokio::net::TcpStream;
 use url::Url;
 use std::sync::Arc;
@@ -36,12 +38,15 @@ where
         }
     }
 
-    pub async fn connect(&self, wss_url: &str) -> Result<()> {
+    pub async fn connect(
+        &self,
+        wss_url: &str,
+    ) -> Result<()> {
         let url_obj = Url::parse(wss_url).map_err(|e| Error::UrlParser(e))?;
         let (ws_stream, _response) = connect_async(url_obj.as_str()) // Convert Url to &str
             .await
             .map_err(|e| Error::WebSocket(e))?;
-        
+
         let mut socket_guard = self.socket.lock().await;
         *socket_guard = Some(ws_stream);
         Ok(())
@@ -58,11 +63,14 @@ where
         }
     }
 
-    async fn handle_message_text(&self, msg_text: String) -> Result<()> {
+    async fn handle_message_text(
+        &self,
+        msg_text: String,
+    ) -> Result<()> {
         // This parsing logic might need to be customized based on how
         // Binance wraps multi-stream data or other specific message formats.
         // For now, assuming direct deserialization or a simple 'data' field check.
-        
+
         // Attempt direct deserialization
         match serde_json::from_str::<E>(&msg_text) {
             Ok(event) => {
@@ -75,7 +83,7 @@ where
                 // This is a simplified example; real-world scenarios might be more complex.
                 if let Ok(value) = serde_json::from_str::<serde_json::Value>(&msg_text) {
                     if let Some(data_val) = value.get("data") {
-                         match serde_json::from_value::<E>(data_val.clone()) {
+                        match serde_json::from_value::<E>(data_val.clone()) {
                             Ok(event) => {
                                 let mut handler_guard = self.handler.lock().await;
                                 (handler_guard)(event).await?;
@@ -86,10 +94,10 @@ where
                             }
                         }
                     }
-                     // If not a "data" wrapper, or if that also fails to parse as E
+                    // If not a "data" wrapper, or if that also fails to parse as E
                     if let Ok(stream_value) = serde_json::from_str::<serde_json::Value>(&msg_text) {
                         if let Some(_stream_name) = stream_value.get("stream") {
-                             if let Some(data_val_stream) = stream_value.get("data") {
+                            if let Some(data_val_stream) = stream_value.get("data") {
                                 match serde_json::from_value::<E>(data_val_stream.clone()) {
                                     Ok(event) => {
                                         let mut handler_guard = self.handler.lock().await;
@@ -100,17 +108,22 @@ where
                                         return Err(Error::Json(e_inner_stream));
                                     }
                                 }
-                             }
+                            }
                         }
                     }
                 }
                 // If all attempts fail, return original direct deserialization error
-                Err(Error::Json(serde_json::from_str::<E>(&msg_text).unwrap_err()))
+                Err(Error::Json(
+                    serde_json::from_str::<E>(&msg_text).unwrap_err(),
+                ))
             }
         }
     }
 
-    pub async fn event_loop(&self, running: Arc<std::sync::atomic::AtomicBool>) -> Result<()> {
+    pub async fn event_loop(
+        &self,
+        running: Arc<std::sync::atomic::AtomicBool>,
+    ) -> Result<()> {
         while running.load(std::sync::atomic::Ordering::Relaxed) {
             let mut socket_guard = self.socket.lock().await;
             if let Some(stream) = socket_guard.as_mut() {
@@ -133,16 +146,22 @@ where
                                 // Re-acquire lock to send Pong
                                 let mut new_socket_guard = self.socket.lock().await;
                                 if let Some(s) = new_socket_guard.as_mut() {
-                                     s.send(Message::Pong(payload)).await.map_err(|e| Error::WebSocket(e))?;
+                                    s.send(Message::Pong(payload))
+                                        .await
+                                        .map_err(|e| Error::WebSocket(e))?;
                                 }
                                 drop(new_socket_guard);
                             }
                             Message::Pong(_) => { /* Pong received */ }
                             Message::Close(close_frame) => {
                                 eprintln!("WebSocket closed by server: {:?}", close_frame);
-                                return Err(Error::Custom(format!("WebSocket closed by server: {:?}", close_frame)));
+                                return Err(Error::Custom(format!(
+                                    "WebSocket closed by server: {:?}",
+                                    close_frame
+                                )));
                             }
-                            Message::Frame(_) => { /* Low-level frame, usually not handled directly */ }
+                            Message::Frame(_) => { /* Low-level frame, usually not handled directly */
+                            }
                         }
                     }
                     Some(Err(e)) => {

@@ -263,7 +263,10 @@ pub struct Bids {
 }
 
 impl Bids {
-    pub fn new(price: f64, qty: f64) -> Bids {
+    pub fn new(
+        price: f64,
+        qty: f64,
+    ) -> Bids {
         Bids { price, qty }
     }
 }
@@ -1019,7 +1022,11 @@ pub struct KlineSummary {
     pub taker_buy_quote_asset_volume: String,
 }
 
-fn get_value(row: &[Value], index: usize, name: &'static str) -> Result<Value> {
+fn get_value(
+    row: &[Value],
+    index: usize,
+    name: &'static str,
+) -> Result<Value> {
     Ok(row
         .get(index)
         .ok_or_else(|| Error::KlineValueMissingError { index, name })?
@@ -1332,7 +1339,10 @@ pub(crate) mod string_or_float {
 
     use serde::{de, Serializer, Deserialize, Deserializer};
 
-    pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<T, S>(
+        value: &T,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
     where
         T: fmt::Display,
         S: Serializer,
@@ -1369,7 +1379,10 @@ pub(crate) mod string_or_float_opt {
 
     use serde::{Serializer, Deserialize, Deserializer};
 
-    pub fn serialize<T, S>(value: &Option<T>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<T, S>(
+        value: &Option<T>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
     where
         T: fmt::Display,
         S: Serializer,
@@ -1402,7 +1415,10 @@ pub(crate) mod string_or_bool {
 
     use serde::{de, Serializer, Deserialize, Deserializer};
 
-    pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<T, S>(
+        value: &T,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
     where
         T: fmt::Display,
         S: Serializer,

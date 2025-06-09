@@ -33,7 +33,8 @@ mod tests {
 
         let parameters: BTreeMap<String, String> = BTreeMap::new();
         let result =
-            binance_rs_plus::util::build_signed_request_custom(parameters, recv_window, now).unwrap();
+            binance_rs_plus::util::build_signed_request_custom(parameters, recv_window, now)
+                .unwrap();
 
         assert_eq!(
             result,

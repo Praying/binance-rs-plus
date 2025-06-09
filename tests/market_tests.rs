@@ -10,14 +10,16 @@ mod tests {
     use float_cmp::*;
 
     #[tokio::test] // Changed
-    async fn get_depth() { // async added
+    async fn get_depth() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_depth = server
             .mock("GET", "/api/v3/depth")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex("symbol=LTCBTC".into()))
             .with_body_from_file("tests/mocks/market/get_depth.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -30,14 +32,16 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_custom_depth() { // async added
+    async fn get_custom_depth() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_custom_depth = server
             .mock("GET", "/api/v3/depth")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex("limit=10&symbol=LTCBTC".into()))
             .with_body_from_file("tests/mocks/market/get_depth.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -50,13 +54,15 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_all_prices() { // async added
+    async fn get_all_prices() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_all_prices = server
             .mock("GET", "/api/v3/ticker/price")
             .with_header("content-type", "application/json;charset=UTF-8")
             .with_body_from_file("tests/mocks/market/get_all_prices.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -78,14 +84,16 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_price() { // async added
+    async fn get_price() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_price = server
             .mock("GET", "/api/v3/ticker/price")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex("symbol=LTCBTC".into()))
             .with_body_from_file("tests/mocks/market/get_price.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -98,14 +106,16 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_average_price() { // async added
+    async fn get_average_price() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_average_price = server
             .mock("GET", "/api/v3/avgPrice")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex("symbol=LTCBTC".into()))
             .with_body_from_file("tests/mocks/market/get_average_price.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -118,13 +128,15 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_all_book_tickers() { // async added
+    async fn get_all_book_tickers() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_all_book_tickers = server
             .mock("GET", "/api/v3/ticker/bookTicker")
             .with_header("content-type", "application/json;charset=UTF-8")
             .with_body_from_file("tests/mocks/market/get_all_book_tickers.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -182,14 +194,16 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_book_ticker() { // async added
+    async fn get_book_ticker() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_book_ticker = server
             .mock("GET", "/api/v3/ticker/bookTicker")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex("symbol=LTCBTC".into()))
             .with_body_from_file("tests/mocks/market/get_book_ticker.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -205,14 +219,16 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_24h_price_stats() { // async added
+    async fn get_24h_price_stats() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_24h_price_stats = server
             .mock("GET", "/api/v3/ticker/24hr")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex("symbol=BNBBTC".into()))
             .with_body_from_file("tests/mocks/market/get_24h_price_stats.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -260,13 +276,15 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_all_24h_price_stats() { // async added
+    async fn get_all_24h_price_stats() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_all_24h_price_stats = server
             .mock("GET", "/api/v3/ticker/24hr")
             .with_header("content-type", "application/json;charset=UTF-8")
             .with_body_from_file("tests/mocks/market/get_all_24h_price_stats.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
@@ -319,23 +337,29 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_klines() { // async added
+    async fn get_klines() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_klines = server
             .mock("GET", "/api/v3/klines")
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex("interval=5m&limit=10&symbol=LTCBTC".into()))
             .with_body_from_file("tests/mocks/market/get_klines.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default().set_rest_api_endpoint(server.url());
         let market: Market = Binance::new_with_config(None, None, &config);
 
-        let klines = market.get_klines("LTCBTC", "5m", Some(10), None, None).await.unwrap(); // .await added, Some for limit
+        let klines = market
+            .get_klines("LTCBTC", "5m", Some(10), None, None)
+            .await
+            .unwrap(); // .await added, Some for limit
         mock_get_klines.assert();
 
         match klines {
-            binance_rs_plus::model::KlineSummaries::AllKlineSummaries(klines_vec) => { // Renamed klines to klines_vec
+            binance_rs_plus::model::KlineSummaries::AllKlineSummaries(klines_vec) => {
+                // Renamed klines to klines_vec
                 assert!(!klines_vec.is_empty());
                 let kline: KlineSummary = klines_vec[0].clone();
 
