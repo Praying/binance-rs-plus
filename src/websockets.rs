@@ -79,14 +79,10 @@ enum Events {
     DepthOrderBookEvent(DepthOrderBookEvent),
 }
 
-// Define the type for the user-provided handler
-type UserCallback<'a> =
-    Box<dyn FnMut(WebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a>;
-
 // Define the type for the adapter handler passed to AsyncWebsocketClient
-type AdapterHandler<'a> =
-    Box<dyn FnMut(Events) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a>;
-
+type AdapterHandler<'a> = Box<
+    dyn FnMut(Events) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a,
+>;
 
 pub struct WebSockets<'a> {
     client: AsyncWebsocketClient<'a, Events, AdapterHandler<'a>>,
@@ -95,7 +91,10 @@ pub struct WebSockets<'a> {
 impl<'a> WebSockets<'a> {
     pub fn new<Callback>(user_handler: Callback) -> WebSockets<'a>
     where
-        Callback: FnMut(WebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a,
+        Callback: FnMut(WebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>>
+            + Send
+            + Sync
+            + 'a,
     {
         let shared_user_handler = Arc::new(TokioMutex::new(user_handler));
 
@@ -128,15 +127,21 @@ impl<'a> WebSockets<'a> {
     }
 
     pub async fn connect(&mut self, subscription: &str) -> Result<()> {
-        self.client.connect(&WebsocketAPI::Default.params(subscription)).await
+        self.client
+            .connect(&WebsocketAPI::Default.params(subscription))
+            .await
     }
 
     pub async fn connect_with_config(&mut self, subscription: &str, config: &Config) -> Result<()> {
-        self.client.connect(&WebsocketAPI::Custom(config.ws_endpoint.clone()).params(subscription)).await
+        self.client
+            .connect(&WebsocketAPI::Custom(config.ws_endpoint.clone()).params(subscription))
+            .await
     }
 
     pub async fn connect_multiple_streams(&mut self, endpoints: &[String]) -> Result<()> {
-        self.client.connect(&WebsocketAPI::MultiStream.params(&endpoints.join("/"))).await
+        self.client
+            .connect(&WebsocketAPI::MultiStream.params(&endpoints.join("/")))
+            .await
     }
 
     pub async fn disconnect(&mut self) -> Result<()> {

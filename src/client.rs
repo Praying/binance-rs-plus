@@ -43,7 +43,9 @@ impl Client {
         self.handler(response).await // Updated
     }
 
-    pub async fn post_signed<T: DeserializeOwned>(&self, endpoint: API, request: String) -> Result<T> {
+    pub async fn post_signed<T: DeserializeOwned>(
+        &self, endpoint: API, request: String,
+    ) -> Result<T> {
         let url = self.sign_request(endpoint, Some(request));
         let client = &self.inner_client;
         let response = client
@@ -69,9 +71,12 @@ impl Client {
         self.handler(response).await // Updated
     }
 
-    pub async fn get<T: DeserializeOwned>(&self, endpoint: API, request: Option<String>) -> Result<T> {
+    pub async fn get<T: DeserializeOwned>(
+        &self, endpoint: API, request: Option<String>,
+    ) -> Result<T> {
         let mut url: String = format!("{}{}", self.host, String::from(endpoint));
-        if let Some(request_str) = request { // Renamed to avoid conflict
+        if let Some(request_str) = request {
+            // Renamed to avoid conflict
             if !request_str.is_empty() {
                 url.push_str(format!("?{}", request_str).as_str());
             }
@@ -128,7 +133,8 @@ impl Client {
 
     // Request must be signed
     fn sign_request(&self, endpoint: API, request: Option<String>) -> String {
-        if let Some(request_str) = request { // Renamed to avoid conflict
+        if let Some(request_str) = request {
+            // Renamed to avoid conflict
             let mut signed_key =
                 Hmac::<Sha256>::new_from_slice(self.secret_key.as_bytes()).unwrap();
             signed_key.update(request_str.as_bytes());
@@ -138,7 +144,8 @@ impl Client {
         } else {
             // HMAC for empty query string still needs a timestamp if that's part of the requirements,
             // but current logic doesn't include it. Assuming it's correct.
-            let mut signed_key = Hmac::<Sha256>::new_from_slice(self.secret_key.as_bytes()).unwrap();
+            let mut signed_key =
+                Hmac::<Sha256>::new_from_slice(self.secret_key.as_bytes()).unwrap();
             // If there's no request string, what are we signing?
             // Binance typically requires a timestamp even for parameter-less signed requests.
             // For now, replicating existing logic of signing an empty string if request is None.
@@ -168,7 +175,8 @@ impl Client {
         Ok(custom_headers)
     }
 
-    async fn handler<T: DeserializeOwned>(&self, response: Response) -> Result<T> { // Updated
+    async fn handler<T: DeserializeOwned>(&self, response: Response) -> Result<T> {
+        // Updated
         match response.status() {
             StatusCode::OK => Ok(response.json::<T>().await?), // Updated
             StatusCode::INTERNAL_SERVER_ERROR => {
@@ -177,9 +185,7 @@ impl Client {
             StatusCode::SERVICE_UNAVAILABLE => {
                 Err(Error::Custom("Service Unavailable".to_string()))
             }
-            StatusCode::UNAUTHORIZED => {
-                Err(Error::Custom("Unauthorized".to_string()))
-            }
+            StatusCode::UNAUTHORIZED => Err(Error::Custom("Unauthorized".to_string())),
             StatusCode::BAD_REQUEST => {
                 let error_content = response.text().await?; // Read as text first for better error diagnosis
                 match serde_json::from_str::<BinanceContentError>(&error_content) {
@@ -190,9 +196,10 @@ impl Client {
                     ))),
                 }
             }
-            s => {
-                 Err(Error::Custom(format!("Received unexpected status code: {:?}", s)))
-            }
+            s => Err(Error::Custom(format!(
+                "Received unexpected status code: {:?}",
+                s
+            ))),
         }
     }
 }

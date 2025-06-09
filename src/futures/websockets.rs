@@ -23,7 +23,6 @@ use std::sync::Arc;
 use tokio::sync::Mutex as TokioMutex;
 // New for handler
 
-
 #[allow(clippy::all)]
 enum FuturesWebsocketAPI {
     Default,
@@ -106,15 +105,13 @@ enum FuturesEvents {
     UserDataStreamExpiredEvent(UserDataStreamExpiredEvent),
 }
 
-
-// Define the type for the user-provided handler
-type UserCallback<'a> =
-    Box<dyn FnMut(FuturesWebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a>;
-
 // Define the type for the adapter handler passed to AsyncWebsocketClient
-type AdapterHandler<'a> =
-    Box<dyn FnMut(FuturesEvents) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a>;
-
+type AdapterHandler<'a> = Box<
+    dyn FnMut(FuturesEvents) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>>
+        + Send
+        + Sync
+        + 'a,
+>;
 
 pub struct FuturesWebSockets<'a> {
     client: AsyncWebsocketClient<'a, FuturesEvents, AdapterHandler<'a>>,
@@ -123,7 +120,10 @@ pub struct FuturesWebSockets<'a> {
 impl<'a> FuturesWebSockets<'a> {
     pub fn new<Callback>(user_handler: Callback) -> FuturesWebSockets<'a>
     where
-        Callback: FnMut(FuturesWebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> + Send + Sync + 'a,
+        Callback: FnMut(FuturesWebsocketEvent) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>>
+            + Send
+            + Sync
+            + 'a,
     {
         let shared_user_handler = Arc::new(TokioMutex::new(user_handler));
 
@@ -142,12 +142,16 @@ impl<'a> FuturesWebSockets<'a> {
                     FuturesEvents::MarkPriceEvent(v) => FuturesWebsocketEvent::MarkPrice(v),
                     FuturesEvents::VecMarkPriceEvent(v) => FuturesWebsocketEvent::MarkPriceAll(v),
                     FuturesEvents::TradeEvent(v) => FuturesWebsocketEvent::Trade(v),
-                    FuturesEvents::ContinuousKlineEvent(v) => FuturesWebsocketEvent::ContinuousKline(v),
+                    FuturesEvents::ContinuousKlineEvent(v) => {
+                        FuturesWebsocketEvent::ContinuousKline(v)
+                    }
                     FuturesEvents::IndexKlineEvent(v) => FuturesWebsocketEvent::IndexKline(v),
                     FuturesEvents::LiquidationEvent(v) => FuturesWebsocketEvent::Liquidation(v),
                     FuturesEvents::KlineEvent(v) => FuturesWebsocketEvent::Kline(v),
                     FuturesEvents::OrderBook(v) => FuturesWebsocketEvent::OrderBook(v),
-                    FuturesEvents::DepthOrderBookEvent(v) => FuturesWebsocketEvent::DepthOrderBook(v),
+                    FuturesEvents::DepthOrderBookEvent(v) => {
+                        FuturesWebsocketEvent::DepthOrderBook(v)
+                    }
                     FuturesEvents::AggrTradesEvent(v) => FuturesWebsocketEvent::AggrTrades(v),
                     FuturesEvents::UserDataStreamExpiredEvent(v) => {
                         FuturesWebsocketEvent::UserDataStreamExpiredEvent(v)
@@ -164,26 +168,31 @@ impl<'a> FuturesWebSockets<'a> {
     }
 
     pub async fn connect(&mut self, market: &FuturesMarket, subscription: &'a str) -> Result<()> {
-        self.client.connect(&FuturesWebsocketAPI::Default.params(market, subscription)).await
+        self.client
+            .connect(&FuturesWebsocketAPI::Default.params(market, subscription))
+            .await
     }
 
     pub async fn connect_with_config(
         &mut self, market: &FuturesMarket, subscription: &'a str, config: &'a Config,
     ) -> Result<()> {
-        let wss_url = if config.ws_endpoint.contains("wss://") || config.ws_endpoint.contains("ws://") {
-             // If config.ws_endpoint is already a full URL, use it directly
-            config.ws_endpoint.clone()
-        } else {
-            // Otherwise, assume it's a base path and use FuturesWebsocketAPI::Custom to format it
-            FuturesWebsocketAPI::Custom(config.ws_endpoint.clone()).params(market, subscription)
-        };
+        let wss_url =
+            if config.ws_endpoint.contains("wss://") || config.ws_endpoint.contains("ws://") {
+                // If config.ws_endpoint is already a full URL, use it directly
+                config.ws_endpoint.clone()
+            } else {
+                // Otherwise, assume it's a base path and use FuturesWebsocketAPI::Custom to format it
+                FuturesWebsocketAPI::Custom(config.ws_endpoint.clone()).params(market, subscription)
+            };
         self.client.connect(&wss_url).await
     }
 
     pub async fn connect_multiple_streams(
         &mut self, market: &FuturesMarket, endpoints: &[String],
     ) -> Result<()> {
-        self.client.connect(&FuturesWebsocketAPI::MultiStream.params(market, &endpoints.join("/"))).await
+        self.client
+            .connect(&FuturesWebsocketAPI::MultiStream.params(market, &endpoints.join("/")))
+            .await
     }
 
     pub async fn disconnect(&mut self) -> Result<()> {

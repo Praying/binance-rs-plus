@@ -234,7 +234,9 @@ impl Account {
         };
         let order = self.build_order(buy);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test limit order - BUY
@@ -281,7 +283,9 @@ impl Account {
         };
         let order = self.build_order(sell);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test LIMIT order - SELL
@@ -328,7 +332,9 @@ impl Account {
         };
         let order = self.build_order(buy);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test MARKET order - BUY
@@ -376,7 +382,9 @@ impl Account {
         };
         let order = self.build_quote_quantity_order(buy);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test MARKET order with quote quantity - BUY
@@ -424,7 +432,9 @@ impl Account {
         };
         let order = self.build_order(sell);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test MARKET order - SELL
@@ -472,7 +482,9 @@ impl Account {
         };
         let order = self.build_quote_quantity_order(sell);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test MARKET order with quote quantity - SELL
@@ -523,11 +535,7 @@ impl Account {
     /// }
     /// ```
     pub async fn stop_limit_buy_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        stop_price: f64,
+        &self, symbol: S, qty: F, price: f64, stop_price: f64,
     ) -> Result<Transaction>
     where
         S: Into<String>,
@@ -545,7 +553,9 @@ impl Account {
         };
         let order = self.build_order(buy);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test Stop Limit Buy order
@@ -570,11 +580,7 @@ impl Account {
     /// }
     /// ```
     pub async fn test_stop_limit_buy_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        stop_price: f64,
+        &self, symbol: S, qty: F, price: f64, stop_price: f64,
     ) -> Result<()>
     where
         S: Into<String>,
@@ -619,11 +625,7 @@ impl Account {
     /// }
     /// ```
     pub async fn stop_limit_sell_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        stop_price: f64,
+        &self, symbol: S, qty: F, price: f64, stop_price: f64,
     ) -> Result<Transaction>
     where
         S: Into<String>,
@@ -641,7 +643,9 @@ impl Account {
         };
         let order = self.build_order(sell);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test Stop Limit Sell order
@@ -666,11 +670,7 @@ impl Account {
     /// }
     /// ```
     pub async fn test_stop_limit_sell_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        stop_price: f64,
+        &self, symbol: S, qty: F, price: f64, stop_price: f64,
     ) -> Result<()>
     where
         S: Into<String>,
@@ -696,14 +696,8 @@ impl Account {
 
     /// Create a custom order
     pub async fn custom_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        order_side: OrderSide,
-        order_type: OrderType,
-        time_in_force: TimeInForce,
-        new_client_order_id: Option<String>,
+        &self, symbol: S, qty: F, price: f64, order_side: OrderSide, order_type: OrderType,
+        time_in_force: TimeInForce, new_client_order_id: Option<String>,
     ) -> Result<Transaction>
     where
         S: Into<String>,
@@ -721,21 +715,17 @@ impl Account {
         };
         let order = self.build_order(custom_order);
         let request = build_signed_request(order, self.recv_window)?;
-        self.client.post_signed(API::Spot(Spot::Order), request).await
+        self.client
+            .post_signed(API::Spot(Spot::Order), request)
+            .await
     }
 
     /// Place a test custom order
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
     pub async fn test_custom_order<S, F>(
-        &self,
-        symbol: S,
-        qty: F,
-        price: f64,
-        order_side: OrderSide,
-        order_type: OrderType,
-        time_in_force: TimeInForce,
-        new_client_order_id: Option<String>,
+        &self, symbol: S, qty: F, price: f64, order_side: OrderSide, order_type: OrderType,
+        time_in_force: TimeInForce, new_client_order_id: Option<String>,
     ) -> Result<()>
     where
         S: Into<String>,
@@ -774,9 +764,7 @@ impl Account {
             .await
     }
     pub async fn cancel_order_with_client_id<S>(
-        &self,
-        symbol: S,
-        client_order_id: String,
+        &self, symbol: S, client_order_id: String,
     ) -> Result<OrderCanceled>
     where
         S: Into<String>,
@@ -824,7 +812,9 @@ impl Account {
     }
 
     // Trade History from a start time
-    pub async fn trade_history_from<S>(&self, symbol: S, start_time: u64) -> Result<Vec<TradeHistory>>
+    pub async fn trade_history_from<S>(
+        &self, symbol: S, start_time: u64,
+    ) -> Result<Vec<TradeHistory>>
     where
         S: Into<String>,
     {
@@ -839,22 +829,31 @@ impl Account {
     }
 
     // Trade History from a start time to an end time
-    pub async fn trade_history_from_to<S>(&self, symbol: S, start_time: u64, end_time: u64) -> Result<Vec<TradeHistory>>
+    pub async fn trade_history_from_to<S>(
+        &self, symbol: S, start_time: u64, end_time: u64,
+    ) -> Result<Vec<TradeHistory>>
     where
         S: Into<String>,
     {
         if is_start_time_valid(&start_time) && (start_time < end_time) {
             self.get_trades(symbol.into(), start_time, end_time).await
         } else {
-            Err(Error::Custom("The given start or end time is invalid.".to_string()))
+            Err(Error::Custom(
+                "The given start or end time is invalid.".to_string(),
+            ))
         }
     }
-    async fn get_trades<S>(&self, symbol: S, start_time: u64, end_time: u64) -> Result<Vec<TradeHistory>>
+    async fn get_trades<S>(
+        &self, symbol: S, start_time: u64, end_time: u64,
+    ) -> Result<Vec<TradeHistory>>
     where
         S: Into<String>,
     {
         let symbol_string = symbol.into(); // Convert once
-        let mut trades = match self.trade_history_from(symbol_string.clone(), start_time).await {
+        let mut trades = match self
+            .trade_history_from(symbol_string.clone(), start_time)
+            .await
+        {
             Ok(trades_vec) => trades_vec,
             Err(e) => return Err(e),
         };
@@ -892,17 +891,14 @@ impl Account {
         let mut open_order: BTreeMap<String, String> = BTreeMap::new();
 
         open_order.insert("symbol".into(), order.symbol);
-        open_order.insert(
-            "quoteOrderQty".into(),
-            format!("{}", order.quote_order_qty),
-        );
+        open_order.insert("quoteOrderQty".into(), format!("{}", order.quote_order_qty));
         open_order.insert("side".into(), order.order_side.to_string());
         open_order.insert("type".into(), order.order_type.to_string());
         if order.order_type == OrderType::Limit {
-             open_order.insert("timeInForce".into(), order.time_in_force.to_string());
-             open_order.insert("price".into(), format!("{}", order.price));
+            open_order.insert("timeInForce".into(), order.time_in_force.to_string());
+            open_order.insert("price".into(), format!("{}", order.price));
         }
-         if let Some(ref new_client_order_id) = order.new_client_order_id {
+        if let Some(ref new_client_order_id) = order.new_client_order_id {
             open_order.insert("newClientOrderId".into(), new_client_order_id.clone());
         }
 

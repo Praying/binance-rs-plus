@@ -8,7 +8,8 @@ async fn criterion_benchmark_async(c: &mut Criterion) {
 
     // Fetch data asynchronously once
     let client = reqwest::Client::new();
-    let all_symbols_json = client.get("https://api.binance.com/api/v3/ticker/24hr") // !ticker@arr is for websockets, REST equivalent is /api/v3/ticker/24hr for all symbols
+    let all_symbols_json = client
+        .get("https://api.binance.com/api/v3/ticker/24hr") // !ticker@arr is for websockets, REST equivalent is /api/v3/ticker/24hr for all symbols
         .send()
         .await
         .expect("Failed to fetch all symbols for benchmark")
@@ -16,14 +17,15 @@ async fn criterion_benchmark_async(c: &mut Criterion) {
         .await
         .expect("Failed to get text for all symbols");
 
-    let btc_symbol_json = client.get("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT") // <symbol>@ticker equivalent for REST
+    let btc_symbol_json = client
+        .get("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT") // <symbol>@ticker equivalent for REST
         .send()
         .await
         .expect("Failed to fetch BTCUSDT for benchmark")
         .text()
         .await
         .expect("Failed to get text for BTCUSDT");
-    
+
     group.sample_size(200); // Adjust as needed
     group.measurement_time(Duration::new(10, 0)); // Shorter time for faster local benchmarks
 

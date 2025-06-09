@@ -53,14 +53,15 @@ async fn market_websocket() -> Result<()> {
         "btcusd_perp@depth@100ms",
     ];
 
-
     // USD-M futures examples
     for stream_example in stream_examples_usd_m {
         println!("Starting with USD_M {:?}", stream_example);
         let keep_running = Arc::new(AtomicBool::new(true));
         let keep_running_clone = Arc::clone(&keep_running);
 
-        let callback_fn = move |event: FuturesWebsocketEvent| -> Pin<Box<dyn Future<Output = BinanceResult<()>> + Send + 'static>> {
+        let callback_fn = move |event: FuturesWebsocketEvent| -> Pin<
+            Box<dyn Future<Output = BinanceResult<()>> + Send + 'static>,
+        > {
             let keep_running_for_handler = Arc::clone(&keep_running_clone);
             Box::pin(async move {
                 println!("USD-M Event for {}: {:?}\n", stream_example, event);
@@ -68,21 +69,30 @@ async fn market_websocket() -> Result<()> {
                 Ok(())
             })
         };
-        
+
         let mut web_socket: FuturesWebSockets<'_> = FuturesWebSockets::new(callback_fn);
-        
-        if let Err(e) = web_socket.connect(&FuturesMarket::USDM, stream_example).await {
-            eprintln!("Failed to connect to USD-M stream {}: {:?}", stream_example, e);
+
+        if let Err(e) = web_socket
+            .connect(&FuturesMarket::USDM, stream_example)
+            .await
+        {
+            eprintln!(
+                "Failed to connect to USD-M stream {}: {:?}",
+                stream_example, e
+            );
             continue;
         }
 
         if let Err(e) = web_socket.event_loop(keep_running.clone()).await {
-             // Log error, but don't panic, try next stream
+            // Log error, but don't panic, try next stream
             eprintln!("Error in USD-M event loop for {}: {:?}", stream_example, e);
         }
-        
+
         if let Err(e) = web_socket.disconnect().await {
-            eprintln!("Failed to disconnect from USD-M stream {}: {:?}", stream_example, e);
+            eprintln!(
+                "Failed to disconnect from USD-M stream {}: {:?}",
+                stream_example, e
+            );
         }
         println!("Finished with USD_M {:?}", stream_example);
         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Small delay before next
@@ -93,8 +103,10 @@ async fn market_websocket() -> Result<()> {
         println!("Starting with COIN_M {:?}", stream_example);
         let keep_running = Arc::new(AtomicBool::new(true));
         let keep_running_clone = Arc::clone(&keep_running);
-        
-        let callback_fn = move |event: FuturesWebsocketEvent| -> Pin<Box<dyn Future<Output = BinanceResult<()>> + Send + 'static>> {
+
+        let callback_fn = move |event: FuturesWebsocketEvent| -> Pin<
+            Box<dyn Future<Output = BinanceResult<()>> + Send + 'static>,
+        > {
             let keep_running_for_handler = Arc::clone(&keep_running_clone);
             Box::pin(async move {
                 println!("COIN-M Event for {}: {:?}\n", stream_example, event);
@@ -105,19 +117,28 @@ async fn market_websocket() -> Result<()> {
 
         let mut web_socket: FuturesWebSockets<'_> = FuturesWebSockets::new(callback_fn);
 
-        if let Err(e) = web_socket.connect(&FuturesMarket::COINM, stream_example).await {
-            eprintln!("Failed to connect to COIN-M stream {}: {:?}", stream_example, e);
+        if let Err(e) = web_socket
+            .connect(&FuturesMarket::COINM, stream_example)
+            .await
+        {
+            eprintln!(
+                "Failed to connect to COIN-M stream {}: {:?}",
+                stream_example, e
+            );
             continue;
         }
-        
+
         if let Err(e) = web_socket.event_loop(keep_running.clone()).await {
             eprintln!("Error in COIN-M event loop for {}: {:?}", stream_example, e);
         }
 
         if let Err(e) = web_socket.disconnect().await {
-            eprintln!("Failed to disconnect from COIN-M stream {}: {:?}", stream_example, e);
+            eprintln!(
+                "Failed to disconnect from COIN-M stream {}: {:?}",
+                stream_example, e
+            );
         }
-         println!("Finished with COIN_M {:?}", stream_example);
+        println!("Finished with COIN_M {:?}", stream_example);
         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Small delay
     }
     Ok(())

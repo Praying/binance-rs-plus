@@ -10,7 +10,8 @@ mod tests {
     use float_cmp::*;
 
     #[tokio::test] // Changed
-    async fn get_account() { // async added
+    async fn get_account() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_account = server
             .mock("GET", "/api/v3/account")
@@ -19,7 +20,8 @@ mod tests {
                 "recvWindow=1234&timestamp=\\d+&signature=.*".into(),
             ))
             .with_body_from_file("tests/mocks/account/get_account.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -30,10 +32,30 @@ mod tests {
 
         mock_get_account.assert();
 
-        assert!(approx_eq!(f32, account_info.maker_commission, 15.0, ulps = 2));
-        assert!(approx_eq!(f32, account_info.taker_commission, 15.0, ulps = 2));
-        assert!(approx_eq!(f32, account_info.buyer_commission, 0.0, ulps = 2));
-        assert!(approx_eq!(f32, account_info.seller_commission, 0.0, ulps = 2));
+        assert!(approx_eq!(
+            f32,
+            account_info.maker_commission,
+            15.0,
+            ulps = 2
+        ));
+        assert!(approx_eq!(
+            f32,
+            account_info.taker_commission,
+            15.0,
+            ulps = 2
+        ));
+        assert!(approx_eq!(
+            f32,
+            account_info.buyer_commission,
+            0.0,
+            ulps = 2
+        ));
+        assert!(approx_eq!(
+            f32,
+            account_info.seller_commission,
+            0.0,
+            ulps = 2
+        ));
         assert!(account_info.can_trade);
         assert!(account_info.can_withdraw);
         assert!(account_info.can_deposit);
@@ -52,7 +74,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_balance() { // async added
+    async fn get_balance() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_get_account = server
             .mock("GET", "/api/v3/account")
@@ -61,7 +84,8 @@ mod tests {
                 "recvWindow=1234&timestamp=\\d+&signature=.*".into(),
             ))
             .with_body_from_file("tests/mocks/account/get_account.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -78,7 +102,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_open_orders() { // async added
+    async fn get_open_orders() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_open_orders = server
             .mock("GET", "/api/v3/openOrders")
@@ -87,7 +112,8 @@ mod tests {
                 "recvWindow=1234&symbol=LTCBTC&timestamp=\\d+&signature=.*".into(), // Signature added for signed endpoint
             ))
             .with_body_from_file("tests/mocks/account/get_open_orders.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -122,14 +148,18 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_all_open_orders() { // async added
+    async fn get_all_open_orders() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_open_orders = server
             .mock("GET", "/api/v3/openOrders")
             .with_header("content-type", "application/json;charset=UTF-8")
-            .match_query(Matcher::Regex("recvWindow=1234&timestamp=\\d+&signature=.*".into())) // Signature added
+            .match_query(Matcher::Regex(
+                "recvWindow=1234&timestamp=\\d+&signature=.*".into(),
+            )) // Signature added
             .with_body_from_file("tests/mocks/account/get_open_orders.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -153,7 +183,7 @@ mod tests {
         assert_eq!(open_order.executed_qty, "0.0");
         assert_eq!(open_order.cummulative_quote_qty, "0.0");
         assert_eq!(open_order.status, "NEW");
-        assert_eq!(open_order.time_in_force, "GTC"); 
+        assert_eq!(open_order.time_in_force, "GTC");
         assert_eq!(open_order.type_name, "LIMIT");
         assert_eq!(open_order.side, "BUY");
         assert!(approx_eq!(f64, open_order.stop_price, 0.0, ulps = 2));
@@ -165,7 +195,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn cancel_all_open_orders() { // async added
+    async fn cancel_all_open_orders() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_cancel_all_open_orders = server
             .mock("DELETE", "/api/v3/openOrders")
@@ -174,7 +205,8 @@ mod tests {
                 "recvWindow=1234&symbol=BTCUSDT&timestamp=\\d+&signature=.*".into(), // Signature added
             ))
             .with_body_from_file("tests/mocks/account/cancel_all_open_orders.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -213,7 +245,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn order_status() { // async added
+    async fn order_status() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_order_status = server
             .mock("GET", "/api/v3/order")
@@ -222,7 +255,8 @@ mod tests {
                 "orderId=1&recvWindow=1234&symbol=LTCBTC&timestamp=\\d+&signature=.*".into(), // Signature added
             ))
             .with_body_from_file("tests/mocks/account/order_status.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -243,10 +277,15 @@ mod tests {
         assert_eq!(order_status_result.executed_qty, "0.0");
         assert_eq!(order_status_result.cummulative_quote_qty, "0.0");
         assert_eq!(order_status_result.status, "NEW");
-        assert_eq!(order_status_result.time_in_force, "GTC"); 
+        assert_eq!(order_status_result.time_in_force, "GTC");
         assert_eq!(order_status_result.type_name, "LIMIT");
         assert_eq!(order_status_result.side, "BUY");
-        assert!(approx_eq!(f64, order_status_result.stop_price, 0.0, ulps = 2));
+        assert!(approx_eq!(
+            f64,
+            order_status_result.stop_price,
+            0.0,
+            ulps = 2
+        ));
         assert_eq!(order_status_result.iceberg_qty, "0.0");
         assert_eq!(order_status_result.time, 1499827319559);
         assert_eq!(order_status_result.update_time, 1499827319559);
@@ -255,16 +294,18 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn test_order_status() { // async added
+    async fn test_order_status() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_test_order_status = server
             .mock("GET", "/api/v3/order/test") // Test endpoint does not need signature if it's just GET
             .with_header("content-type", "application/json;charset=UTF-8")
             .match_query(Matcher::Regex(
-                 "orderId=1&recvWindow=1234&symbol=LTCBTC&timestamp=\\d+&signature=.*".into(), // Test endpoint also needs signature
+                "orderId=1&recvWindow=1234&symbol=LTCBTC&timestamp=\\d+&signature=.*".into(), // Test endpoint also needs signature
             ))
             .with_body("{}")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -277,7 +318,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn limit_buy() { // async added
+    async fn limit_buy() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_limit_buy = server.mock("POST", "/api/v3/order")
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -310,13 +352,14 @@ mod tests {
             ulps = 2
         ));
         assert_eq!(transaction.status, "NEW");
-        assert_eq!(transaction.time_in_force, "GTC"); 
+        assert_eq!(transaction.time_in_force, "GTC");
         assert_eq!(transaction.type_name, "LIMIT");
         assert_eq!(transaction.side, "BUY");
     }
 
     #[tokio::test] // Changed
-    async fn test_limit_buy() { // async added
+    async fn test_limit_buy() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_test_limit_buy = server.mock("POST", "/api/v3/order/test")
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -335,7 +378,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn limit_sell() { // async added
+    async fn limit_sell() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_limit_sell = server.mock("POST", "/api/v3/order")
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -374,7 +418,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn test_limit_sell() { // async added
+    async fn test_limit_sell() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_test_limit_sell = server.mock("POST", "/api/v3/order/test")
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -393,7 +438,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn market_buy() { // async added
+    async fn market_buy() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_market_buy = server
             .mock("POST", "/api/v3/order")
@@ -403,7 +449,8 @@ mod tests {
                     .into(),
             ))
             .with_body_from_file("tests/mocks/account/market_buy.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -416,7 +463,7 @@ mod tests {
 
         assert_eq!(transaction.symbol, "LTCBTC");
         // ... (rest of assertions remain the same)
-         assert_eq!(transaction.order_id, 1);
+        assert_eq!(transaction.order_id, 1);
         assert_eq!(transaction.order_list_id.unwrap(), -1);
         assert_eq!(transaction.client_order_id, "6gCrw2kRUAF9CvJDGP16IP");
         assert_eq!(transaction.transact_time, 1507725176595);
@@ -430,13 +477,14 @@ mod tests {
             ulps = 2
         ));
         assert_eq!(transaction.status, "NEW"); // Status might be FILLED directly
-        assert_eq!(transaction.time_in_force, "GTC"); 
+        assert_eq!(transaction.time_in_force, "GTC");
         assert_eq!(transaction.type_name, "MARKET");
         assert_eq!(transaction.side, "BUY");
     }
 
     #[tokio::test] // Changed
-    async fn test_market_buy() { // async added
+    async fn test_market_buy() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_test_market_buy = server
             .mock("POST", "/api/v3/order/test")
@@ -446,7 +494,8 @@ mod tests {
                     .into(),
             ))
             .with_body("{}")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_rest_api_endpoint(server.url())
@@ -459,7 +508,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn market_buy_using_quote_quantity() { // async added
+    async fn market_buy_using_quote_quantity() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_market_buy_using_quote_quantity = server.mock("POST", "/api/v3/order")
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -472,7 +522,11 @@ mod tests {
             .set_recv_window(1234);
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        match account.market_buy_using_quote_quantity("BNBBTC", 0.002).await { // .await added
+        match account
+            .market_buy_using_quote_quantity("BNBBTC", 0.002)
+            .await
+        {
+            // .await added
             Ok(answer) => {
                 assert!(answer.order_id == 1);
             }
@@ -483,7 +537,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn test_market_buy_using_quote_quantity() { // async added
+    async fn test_market_buy_using_quote_quantity() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_test_market_buy_using_quote_quantity = server.mock("POST", "/api/v3/order/test")
             .with_header("content-type", "application/json;charset=UTF-8")

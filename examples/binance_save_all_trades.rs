@@ -1,16 +1,19 @@
-use std::error::Error as StdError; // Renamed to avoid conflict
-use std::fs::File;
+use std::error::Error as StdError;
 use csv::Writer;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc; // Added
-use tokio::sync::Mutex; // Added
+// Renamed to avoid conflict
+use std::fs::File;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
+// Added
+use tokio::sync::Mutex;
+// Added
 
-use binance_rs_plus::websockets::*;
+use anyhow::Result;
 use binance_rs_plus::model::DayTickerEvent;
-use anyhow::Result; // Added
-use std::pin::Pin; // Added
-use std::future::Future; // Added
-use binance_rs_plus::errors::Result as BinanceResult; // For handler return type
+use binance_rs_plus::websockets::*;
+// Added
+use binance_rs_plus::errors::Result as BinanceResult;
+// For handler return type
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -29,7 +32,9 @@ async fn save_all_trades_websocket() -> Result<()> {
         }
 
         // serialize DayTickerEvent as CSV records
-        pub fn write_to_file(&mut self, events: Vec<DayTickerEvent>) -> Result<(), Box<dyn StdError>> {
+        pub fn write_to_file(
+            &mut self, events: Vec<DayTickerEvent>,
+        ) -> Result<(), Box<dyn StdError>> {
             for event in events {
                 self.wrt.serialize(event)?;
             }
@@ -43,7 +48,7 @@ async fn save_all_trades_websocket() -> Result<()> {
     let local_wrt = csv::Writer::from_path(file_path)?;
 
     let web_socket_handler = Arc::new(Mutex::new(WebSocketHandler::new(local_wrt)));
-    
+
     let agg_trade_stream_name = String::from("!ticker@arr");
 
     // Note: The lifetime 'a for WebSockets is now 'static due to the move in the async block.
@@ -70,7 +75,10 @@ async fn save_all_trades_websocket() -> Result<()> {
     });
 
     web_socket.connect(&agg_trade_stream_name).await?; // .await and check error with ?
-    println!("Connected to {} stream. Waiting for events...", agg_trade_stream_name);
+    println!(
+        "Connected to {} stream. Waiting for events...",
+        agg_trade_stream_name
+    );
 
     // Event loop will run until keep_running is false or an error occurs.
     // For this example, it will run indefinitely until manually stopped or an error.
@@ -91,7 +99,7 @@ async fn save_all_trades_websocket() -> Result<()> {
     if let Err(e) = web_socket.event_loop(keep_running.clone()).await {
         eprintln!("Error in WebSocket event loop: {}", e);
     }
-    
+
     web_socket.disconnect().await?; // .await and check error
     println!("Disconnected from WebSocket stream.");
     Ok(())

@@ -12,7 +12,8 @@ pub struct FuturesGeneral {
 
 impl FuturesGeneral {
     // Test connectivity
-    pub async fn ping(&self) -> Result<String> { // async added
+    pub async fn ping(&self) -> Result<String> {
+        // async added
         self.client
             .get::<Empty>(API::Futures(Futures::Ping), None)
             .await?; // .await? added
@@ -20,23 +21,29 @@ impl FuturesGeneral {
     }
 
     // Check server time
-    pub async fn get_server_time(&self) -> Result<ServerTime> { // async added
+    pub async fn get_server_time(&self) -> Result<ServerTime> {
+        // async added
         self.client.get(API::Futures(Futures::Time), None).await // .await added
     }
 
     // Obtain exchange information
     // - Current exchange trading rules and symbol information
-    pub async fn exchange_info(&self) -> Result<ExchangeInformation> { // async added
-        self.client.get(API::Futures(Futures::ExchangeInfo), None).await // .await added
+    pub async fn exchange_info(&self) -> Result<ExchangeInformation> {
+        // async added
+        self.client
+            .get(API::Futures(Futures::ExchangeInfo), None)
+            .await // .await added
     }
 
     // Get Symbol information
-    pub async fn get_symbol_info<S>(&self, symbol: S) -> Result<Symbol> // async added
+    pub async fn get_symbol_info<S>(&self, symbol: S) -> Result<Symbol>
+    // async added
     where
         S: Into<String>,
     {
         let upper_symbol = symbol.into().to_uppercase();
-        match self.exchange_info().await { // .await added
+        match self.exchange_info().await {
+            // .await added
             Ok(info) => {
                 for item in info.symbols {
                     if item.symbol == upper_symbol {

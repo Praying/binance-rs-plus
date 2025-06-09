@@ -11,7 +11,8 @@ mod tests {
     use binance_rs_plus::futures::model::{Transaction, Income}; // Added Income
 
     #[tokio::test] // Changed
-    async fn change_initial_leverage() { // async added
+    async fn change_initial_leverage() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_change_leverage = server
             .mock("POST", "/fapi/v1/leverage")
@@ -20,7 +21,8 @@ mod tests {
                 "leverage=2&recvWindow=1234&symbol=LTCUSDT&timestamp=\\d+&signature=.*".into(),
             ))
             .with_body_from_file("tests/mocks/futures/account/change_initial_leverage.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
@@ -42,7 +44,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn change_margin_type() { // async added
+    async fn change_margin_type() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("POST", "/fapi/v1/marginType")
@@ -52,7 +55,8 @@ mod tests {
                     .into(),
             ))
             .with_body_from_file("tests/mocks/futures/account/change_margin_type.json") // This mock should return an empty JSON object {} for success
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
@@ -65,7 +69,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn change_position_margin() { // async added
+    async fn change_position_margin() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("POST", "/fapi/v1/positionMargin")
@@ -75,12 +80,13 @@ mod tests {
                 // If the function signature changed `true` to `1` for type, this is okay.
                 // The function `change_position_margin` now takes amount: f64, margin_type: u8
                 // Assuming `true` was meant to be `1` for ADD_MARGIN.
-                "amount=100&recvWindow=1234&symbol=BTCUSDT&timestamp=\\d+&type=1&signature=.*" 
+                "amount=100&recvWindow=1234&symbol=BTCUSDT&timestamp=\\d+&type=1&signature=.*"
                     .into(),
             ))
-             // This mock should return an empty JSON object {} or specific success/error response
+            // This mock should return an empty JSON object {} or specific success/error response
             .with_body_from_file("tests/mocks/futures/account/change_position_margin.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
@@ -96,7 +102,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn cancel_all_open_orders() { // async added
+    async fn cancel_all_open_orders() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("DELETE", "/fapi/v1/allOpenOrders")
@@ -105,7 +112,8 @@ mod tests {
                 "recvWindow=1234&symbol=BTCUSDT&timestamp=\\d+&signature=.*".into(),
             ))
             .with_body_from_file("tests/mocks/futures/account/cancel_all_open_orders.json") // This should return success or error code
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
@@ -118,7 +126,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn change_position_mode() { // async added
+    async fn change_position_mode() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("POST", "/fapi/v1/positionSide/dual")
@@ -127,7 +136,8 @@ mod tests {
                 "dualSidePosition=true&recvWindow=1234&timestamp=\\d+&signature=.*".into(),
             ))
             .with_body_from_file("tests/mocks/futures/account/change_position_mode.json") // Should return success/error
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())
@@ -140,7 +150,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn stop_market_close_buy() { // async added
+    async fn stop_market_close_buy() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_stop_market_close_buy = server.mock("POST", "/fapi/v1/order") // Renamed for clarity
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -154,7 +165,10 @@ mod tests {
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let transaction: Transaction = account.stop_market_close_buy("SRMUSDT", 10.5).await.unwrap(); // .await added
+        let transaction: Transaction = account
+            .stop_market_close_buy("SRMUSDT", 10.5)
+            .await
+            .unwrap(); // .await added
 
         mock_stop_market_close_buy.assert();
 
@@ -166,7 +180,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn stop_market_close_sell() { // async added
+    async fn stop_market_close_sell() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock_stop_market_close_sell = server.mock("POST", "/fapi/v1/order")
             .with_header("content-type", "application/json;charset=UTF-8")
@@ -179,7 +194,10 @@ mod tests {
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let transaction: Transaction = account.stop_market_close_sell("SRMUSDT", 7.4).await.unwrap(); // .await added
+        let transaction: Transaction = account
+            .stop_market_close_sell("SRMUSDT", 7.4)
+            .await
+            .unwrap(); // .await added
 
         mock_stop_market_close_sell.assert();
 
@@ -191,7 +209,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn custom_order() { // async added
+    async fn custom_order() {
+        // async added
         let mut server = Server::new_async().await; // async added
         // This test used the same mock as stop_market_close_sell, if custom_order builds the same query, it's fine.
         let mock_custom_order = server.mock("POST", "/fapi/v1/order")
@@ -205,7 +224,8 @@ mod tests {
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let custom_order_request = CustomOrderRequest { // Renamed for clarity
+        let custom_order_request = CustomOrderRequest {
+            // Renamed for clarity
             symbol: "SRMUSDT".into(),
             side: OrderSide::Sell, // Ensure this is the correct OrderSide from crate::account
             position_side: None,
@@ -234,7 +254,8 @@ mod tests {
     }
 
     #[tokio::test] // Changed
-    async fn get_income() { // async added
+    async fn get_income() {
+        // async added
         let mut server = Server::new_async().await; // async added
         let mock = server
             .mock("GET", "/fapi/v1/income")
@@ -245,7 +266,8 @@ mod tests {
                     .into(),
             ))
             .with_body_from_file("tests/mocks/futures/account/get_income_history.json")
-            .create_async().await; // async added
+            .create_async()
+            .await; // async added
 
         let config = Config::default()
             .set_futures_rest_api_endpoint(server.url())

@@ -27,7 +27,7 @@ async fn user_stream() -> Result<()> {
 
             // It's good practice to sleep a bit if you intend to actually use the stream
             // For this example, we'll just close it immediately.
-            // tokio::time::sleep(tokio::time::Duration::from_secs(60)).await; 
+            // tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
 
             match user_stream.close(&listen_key).await {
                 Ok(msg) => println!("Close futures user data stream: {:?}", msg),
@@ -35,7 +35,10 @@ async fn user_stream() -> Result<()> {
             }
         }
         Err(e) => {
-            println!("Not able to start a Futures User Stream (Check your API_KEY): {:?}", e);
+            println!(
+                "Not able to start a Futures User Stream (Check your API_KEY): {:?}",
+                e
+            );
         }
     }
     Ok(())
