@@ -18,7 +18,6 @@ Unofficial Rust Library for the [Binance API](https://github.com/binance/binance
 [![Build Status](https://travis-ci.org/Praying/binance-rs-plus.png?branch=main)](https://travis-ci.org/Praying/binance-rs-plus)
 [![CI](https://github.com/Praying/binance-rs-plus/workflows/Rust/badge.svg)](https://github.com/Praying/binance-rs-plus/actions?query=workflow%3ARust)
 [![MIT licensed](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE-MIT)
-[![Apache-2.0 licensed](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE-APACHE)
 [![Forked from](https://img.shields.io/badge/Forked%20from-wisespace--io/binance--rs-blue?style=flat-square&logo=github)](https://github.com/wisespace-io/binance-rs-plus)
 
 [Documentation on docs.rs](https://docs.rs/crate/binance-rs-plus/)
