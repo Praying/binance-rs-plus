@@ -32,7 +32,7 @@ serde_json = "1.0.140"
 sha2 = "0.10.9"
 thiserror = "2.0.12"
 tokio = { version = "1.45.1", features = ["full"] }
-tokio-tungstenite = { version = "0.23.1", features = ["rustls"] }
+tokio-tungstenite = { version = "0.26.2", features = ["rustls"] }
 url = "2.5.0"
 
 
